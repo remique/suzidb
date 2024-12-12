@@ -11,22 +11,36 @@ import (
 func main() {
 	myPlan := p.CreateTablePlan{
 		Table: m.Table{
-			Name: "tableName",
+			Name:       "tableName",
+			PrimaryKey: "columnName",
 			Columns: []m.Column{
 				{
-					Name:    "columnName",
-					Type:    "columnType",
-					Primary: false,
+					Name: "columnName",
 				},
 			},
 		},
 	}
 
 	stor := storage.NewMemStorage()
-	exec := e.NewExecutor(stor)
-	res := exec.ExecutePlan(&myPlan)
+	catalog := storage.NewSchemaManager(stor)
+	exec := e.NewExecutor(stor, catalog)
+	res, err := exec.ExecutePlan(&myPlan)
+	if err != nil {
+		fmt.Println("ERR", err)
+	}
 
 	fmt.Println(res)
 
-	fmt.Println(stor.Get("tableName"))
+	fmt.Println(stor.Get("meta:tableName"))
+	// secondRes, err := exec.GetTable("tableName")
+	// if err != nil {
+	// 	fmt.Println("ER", err)
+	// }
+	// fmt.Println(secondRes)
+
+	get, err := exec.GetTable("tableName")
+	if err != nil {
+		fmt.Println("ERR2: ", err)
+	}
+	fmt.Printf("%v\n", get)
 }

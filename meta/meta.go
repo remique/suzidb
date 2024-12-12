@@ -1,12 +1,12 @@
 package meta
 
 type Column struct {
-	Name    string
-	Type    string
-	Primary bool
+	Name string
+	// Type    string
 }
 
 type Table struct {
-	Name    string
-	Columns []Column
+	Name       string
+	Columns    []Column
+	PrimaryKey string
 }

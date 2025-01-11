@@ -6,7 +6,6 @@ import (
 	"example.com/suzidb/meta"
 )
 
-// TODO: Add table schema
 type Catalog interface {
 	CreateTable(name string, schema meta.Table) error
 	GetTable(name string) (*meta.Table, error)

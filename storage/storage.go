@@ -8,6 +8,7 @@ type KeyValue struct {
 type Storage interface {
 	Get(key string) string
 	Set(key, value string) error
+	ScanKeys() []string
 }
 
 // TODO: Add tuple saving

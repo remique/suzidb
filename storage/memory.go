@@ -26,3 +26,13 @@ func (ms *MemStorage) Set(key, value string) error {
 
 	return nil
 }
+
+func (ms *MemStorage) ScanKeys() []string {
+	var res []string
+
+	for key := range ms.Store {
+		res = append(res, key)
+	}
+
+	return res
+}

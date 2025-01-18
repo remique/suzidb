@@ -5,11 +5,18 @@ import (
 )
 
 type Lexer struct {
-	input           string
+	// Input string
+	input string
+
+	// Denotes current position in Lexer
 	currentPosition int
-	ch              byte
+
+	// Current byte.
+	// TODO: Support Unicode
+	ch byte
 }
 
+// Lexer constructor. We have to consume first iteration before returing the Lexer object.
 func NewLexer(input string) *Lexer {
 	l := &Lexer{
 		input:           input,
@@ -20,6 +27,7 @@ func NewLexer(input string) *Lexer {
 	return l
 }
 
+// Consumes a character.
 func (l *Lexer) readChar() {
 	if l.currentPosition >= len(l.input) {
 		l.ch = '0'
@@ -30,6 +38,7 @@ func (l *Lexer) readChar() {
 	l.currentPosition += 1
 }
 
+// Returns a Token based on the input
 func (l *Lexer) NextToken() Token {
 	var tok Token
 
@@ -57,7 +66,7 @@ func (l *Lexer) NextToken() Token {
 			l.readChar()
 
 			tok.literal = l.readString()
-			tok.tokenType = STRING
+			tok.TokenType = STRING
 
 			// Skip last '
 			l.readChar()
@@ -68,11 +77,11 @@ func (l *Lexer) NextToken() Token {
 		{
 			if isLetter(l.ch) {
 				tok.literal = strings.ToLower(l.readIdentifier())
-				tok.tokenType = lookupIdent(tok.literal)
+				tok.TokenType = lookupIdent(tok.literal)
 
 				return tok
 			} else if isDigit(l.ch) {
-				tok.tokenType = INT
+				tok.TokenType = INT
 				tok.literal = l.readNumber()
 
 				return tok
@@ -87,13 +96,14 @@ func (l *Lexer) NextToken() Token {
 	return tok
 }
 
+// Utility function to skip any whitespace.
 func (l *Lexer) skipWhitespace() {
 	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' {
 		l.readChar()
 	}
 }
 
-// ???
+// Reads identifier (or possibly keyword, but that is determined in lookupIdent function).
 func (l *Lexer) readIdentifier() string {
 	startPos := l.currentPosition - 1
 
@@ -104,6 +114,8 @@ func (l *Lexer) readIdentifier() string {
 	return l.input[startPos : l.currentPosition-1]
 }
 
+// Reads a string. It differs from readIdentifier, because the string itself might not contain
+// only letters, but other characters as well.
 func (l *Lexer) readString() string {
 	startPos := l.currentPosition - 1
 
@@ -114,6 +126,7 @@ func (l *Lexer) readString() string {
 	return l.input[startPos : l.currentPosition-1]
 }
 
+// Reads a number. Currently we only support integers.
 func (l *Lexer) readNumber() string {
 	startPos := l.currentPosition - 1
 
@@ -124,6 +137,7 @@ func (l *Lexer) readNumber() string {
 	return l.input[startPos : l.currentPosition-1]
 }
 
+// Looks up an identifier in keyword map. If the keyword exists in the map, it is a keyword.
 func lookupIdent(identifier string) TokenType {
 	if token, ok := keywords[identifier]; ok {
 		return token
@@ -132,10 +146,12 @@ func lookupIdent(identifier string) TokenType {
 	return IDENTIFIER
 }
 
+// Utility function that determines wheter a character is a letter.
 func isLetter(ch byte) bool {
 	return ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z'
 }
 
+// Utility function that determines whether a byte is a number.
 func isDigit(ch byte) bool {
 	return ch >= '0' && ch <= '9'
 }

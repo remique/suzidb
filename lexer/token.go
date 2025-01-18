@@ -16,12 +16,20 @@ const (
 	COMMA     = ","
 
 	// Keywords
-	SELECT = "SELECT"
-	INSERT = "INSERT"
-	WHERE  = "WHERE"
-	FROM   = "FROM"
-	INTO   = "INTO"
-	VALUES = "VALUES"
+	SELECT  = "SELECT"
+	INSERT  = "INSERT"
+	WHERE   = "WHERE"
+	FROM    = "FROM"
+	INTO    = "INTO"
+	VALUES  = "VALUES"
+	CREATE  = "CREATE"
+	TABLE   = "TABLE"
+	PRIMARY = "PRIMARY"
+	KEY     = "KEY"
+
+	// (Keywords) To denote a type in CREATE TABLE statement
+	TEXT_TYPE = "TEXT_TYPE"
+	INT_TYPE  = "INT_TYPE"
 
 	L_PAREN = "("
 	R_PAREN = ")"
@@ -31,23 +39,30 @@ const (
 	EOF
 )
 
+// A map of all reserved keywords
 var keywords = map[string]TokenType{
-	"select": SELECT,
-	"insert": INSERT,
-	"from":   FROM,
-	"where":  WHERE,
-	"into":   INTO,
-	"values": VALUES,
+	"select":  SELECT,
+	"insert":  INSERT,
+	"from":    FROM,
+	"where":   WHERE,
+	"into":    INTO,
+	"values":  VALUES,
+	"create":  CREATE,
+	"table":   TABLE,
+	"primary": PRIMARY,
+	"key":     KEY,
+	"text":    TEXT_TYPE,
+	"int":     INT_TYPE,
 }
 
 type Token struct {
-	tokenType TokenType
+	TokenType TokenType
 	literal   string
 }
 
 func newToken(tokenType TokenType, literal string) Token {
 	return Token{
-		tokenType: tokenType,
+		TokenType: tokenType,
 		literal:   literal,
 	}
 }

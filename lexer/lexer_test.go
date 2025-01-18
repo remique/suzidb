@@ -110,3 +110,33 @@ func TestNextTokenInsertQuery(t *testing.T) {
 		}
 	}
 }
+
+func TestNextTokenCreateTableQuery(t *testing.T) {
+	lexer := NewLexer("CREATE TABLE cars(brand TEXT primary kEy, year INT);")
+
+	tests := []struct {
+		expectedToken Token
+	}{
+		{expectedToken: newToken(CREATE, "create")},
+		{expectedToken: newToken(TABLE, "table")},
+		{expectedToken: newToken(IDENTIFIER, "cars")},
+		{expectedToken: newToken(L_PAREN, "(")},
+		{expectedToken: newToken(IDENTIFIER, "brand")},
+		{expectedToken: newToken(TEXT_TYPE, "text")},
+		{expectedToken: newToken(PRIMARY, "primary")},
+		{expectedToken: newToken(KEY, "key")},
+		{expectedToken: newToken(COMMA, ",")},
+		{expectedToken: newToken(IDENTIFIER, "year")},
+		{expectedToken: newToken(INT_TYPE, "int")},
+		{expectedToken: newToken(R_PAREN, ")")},
+		{expectedToken: newToken(SEMICOLON, ";")},
+	}
+
+	for _, test := range tests {
+		tok := lexer.NextToken()
+
+		if tok != test.expectedToken {
+			t.Fatalf("Expected token %q, got %q", test.expectedToken, tok)
+		}
+	}
+}

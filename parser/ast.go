@@ -1,5 +1,9 @@
 package parser
 
+import (
+	l "example.com/suzidb/lexer"
+)
+
 type AstKind uint
 
 const (
@@ -16,7 +20,8 @@ type Statement struct {
 }
 
 type SelectStatement struct {
-	//
+	SelectItems *[]l.Token
+	From        *l.Token
 }
 
 type CreateTableStatement struct {
@@ -25,4 +30,15 @@ type CreateTableStatement struct {
 
 type InsertStatement struct {
 	//
+}
+
+type ExpressionKind uint
+
+const (
+	IdentifierKind ExpressionKind = iota
+)
+
+type Expression struct {
+	IdentifierExpression *l.Token
+	Kind                 ExpressionKind
 }

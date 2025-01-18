@@ -2,27 +2,43 @@ package lexer
 
 type TokenType string
 
-var keywords = map[string]TokenType{
-	"select": SELECT,
-	"insert": INSERT,
-}
-
 const (
 	IDENTIFIER = "IDENTIFIER"
 
-	EQUALS = "="
-	PLUS   = "+"
+	// For values assigned within tables, eg. 'Alice', 'Bob'
+	STRING = "STRING"
+	INT    = "INT"
+
+	EQUALS    = "="
+	PLUS      = "+"
+	STAR      = "*"
+	SEMICOLON = ";"
+	COMMA     = ","
 
 	// Keywords
 	SELECT = "SELECT"
 	INSERT = "INSERT"
 	WHERE  = "WHERE"
 	FROM   = "FROM"
+	INTO   = "INTO"
+	VALUES = "VALUES"
+
+	L_PAREN = "("
+	R_PAREN = ")"
 
 	// Illegal & EOF
 	ILLEGAL
 	EOF
 )
+
+var keywords = map[string]TokenType{
+	"select": SELECT,
+	"insert": INSERT,
+	"from":   FROM,
+	"where":  WHERE,
+	"into":   INTO,
+	"values": VALUES,
+}
 
 type Token struct {
 	tokenType TokenType

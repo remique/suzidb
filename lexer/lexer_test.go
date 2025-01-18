@@ -13,8 +13,8 @@ func TestReadChar(t *testing.T) {
 		{'a'},
 		{'b'},
 		{'c'},
-		{'0'},
-		{'0'},
+		{0},
+		{0},
 	}
 
 	for _, test := range tests {
@@ -26,18 +26,42 @@ func TestReadChar(t *testing.T) {
 	}
 }
 
+func TestNextToken2(t *testing.T) {
+	lexer := NewLexer("a, b, c;")
+
+	tests := []struct {
+		expectedToken Token
+	}{
+		{expectedToken: NewToken(IDENTIFIER, "a")},
+		{expectedToken: NewToken(COMMA, ",")},
+		{expectedToken: NewToken(IDENTIFIER, "b")},
+		{expectedToken: NewToken(COMMA, ",")},
+		{expectedToken: NewToken(IDENTIFIER, "c")},
+		{expectedToken: NewToken(SEMICOLON, ";")},
+		{expectedToken: NewToken(EOF, "")},
+	}
+
+	for _, test := range tests {
+		tok := lexer.NextToken()
+
+		if tok != test.expectedToken {
+			t.Fatalf("Expected token %q, got %q", test.expectedToken, tok)
+		}
+	}
+}
+
 func TestNextToken(t *testing.T) {
 	lexer := NewLexer("+=abc def select inSerT")
 
 	tests := []struct {
 		expectedToken Token
 	}{
-		{expectedToken: newToken(PLUS, "+")},
-		{expectedToken: newToken(EQUALS, "=")},
-		{expectedToken: newToken(IDENTIFIER, "abc")},
-		{expectedToken: newToken(IDENTIFIER, "def")},
-		{expectedToken: newToken(SELECT, "select")},
-		{expectedToken: newToken(INSERT, "insert")},
+		{expectedToken: NewToken(PLUS, "+")},
+		{expectedToken: NewToken(EQUALS, "=")},
+		{expectedToken: NewToken(IDENTIFIER, "abc")},
+		{expectedToken: NewToken(IDENTIFIER, "def")},
+		{expectedToken: NewToken(SELECT, "select")},
+		{expectedToken: NewToken(INSERT, "insert")},
 	}
 
 	for _, test := range tests {
@@ -55,15 +79,15 @@ func TestNextTokenSelectQuery(t *testing.T) {
 	tests := []struct {
 		expectedToken Token
 	}{
-		{expectedToken: newToken(SELECT, "select")},
-		{expectedToken: newToken(STAR, "*")},
-		{expectedToken: newToken(FROM, "from")},
-		{expectedToken: newToken(IDENTIFIER, "mytable")},
-		{expectedToken: newToken(WHERE, "where")},
-		{expectedToken: newToken(IDENTIFIER, "id")},
-		{expectedToken: newToken(EQUALS, "=")},
-		{expectedToken: newToken(INT, "10")},
-		{expectedToken: newToken(SEMICOLON, ";")},
+		{expectedToken: NewToken(SELECT, "select")},
+		{expectedToken: NewToken(STAR, "*")},
+		{expectedToken: NewToken(FROM, "from")},
+		{expectedToken: NewToken(IDENTIFIER, "mytable")},
+		{expectedToken: NewToken(WHERE, "where")},
+		{expectedToken: NewToken(IDENTIFIER, "id")},
+		{expectedToken: NewToken(EQUALS, "=")},
+		{expectedToken: NewToken(INT, "10")},
+		{expectedToken: NewToken(SEMICOLON, ";")},
 	}
 
 	for _, test := range tests {
@@ -81,25 +105,25 @@ func TestNextTokenInsertQuery(t *testing.T) {
 	tests := []struct {
 		expectedToken Token
 	}{
-		{expectedToken: newToken(INSERT, "insert")},
-		{expectedToken: newToken(INTO, "into")},
-		{expectedToken: newToken(IDENTIFIER, "mytable")},
-		{expectedToken: newToken(L_PAREN, "(")},
-		{expectedToken: newToken(IDENTIFIER, "a")},
-		{expectedToken: newToken(COMMA, ",")},
-		{expectedToken: newToken(IDENTIFIER, "b")},
-		{expectedToken: newToken(COMMA, ",")},
-		{expectedToken: newToken(IDENTIFIER, "c")},
-		{expectedToken: newToken(R_PAREN, ")")},
-		{expectedToken: newToken(VALUES, "values")},
-		{expectedToken: newToken(L_PAREN, "(")},
-		{expectedToken: newToken(STRING, "hello")},
-		{expectedToken: newToken(COMMA, ",")},
-		{expectedToken: newToken(STRING, "world")},
-		{expectedToken: newToken(COMMA, ",")},
-		{expectedToken: newToken(STRING, "!")},
-		{expectedToken: newToken(R_PAREN, ")")},
-		{expectedToken: newToken(SEMICOLON, ";")},
+		{expectedToken: NewToken(INSERT, "insert")},
+		{expectedToken: NewToken(INTO, "into")},
+		{expectedToken: NewToken(IDENTIFIER, "mytable")},
+		{expectedToken: NewToken(L_PAREN, "(")},
+		{expectedToken: NewToken(IDENTIFIER, "a")},
+		{expectedToken: NewToken(COMMA, ",")},
+		{expectedToken: NewToken(IDENTIFIER, "b")},
+		{expectedToken: NewToken(COMMA, ",")},
+		{expectedToken: NewToken(IDENTIFIER, "c")},
+		{expectedToken: NewToken(R_PAREN, ")")},
+		{expectedToken: NewToken(VALUES, "values")},
+		{expectedToken: NewToken(L_PAREN, "(")},
+		{expectedToken: NewToken(STRING, "hello")},
+		{expectedToken: NewToken(COMMA, ",")},
+		{expectedToken: NewToken(STRING, "world")},
+		{expectedToken: NewToken(COMMA, ",")},
+		{expectedToken: NewToken(STRING, "!")},
+		{expectedToken: NewToken(R_PAREN, ")")},
+		{expectedToken: NewToken(SEMICOLON, ";")},
 	}
 
 	for _, test := range tests {
@@ -117,19 +141,19 @@ func TestNextTokenCreateTableQuery(t *testing.T) {
 	tests := []struct {
 		expectedToken Token
 	}{
-		{expectedToken: newToken(CREATE, "create")},
-		{expectedToken: newToken(TABLE, "table")},
-		{expectedToken: newToken(IDENTIFIER, "cars")},
-		{expectedToken: newToken(L_PAREN, "(")},
-		{expectedToken: newToken(IDENTIFIER, "brand")},
-		{expectedToken: newToken(TEXT_TYPE, "text")},
-		{expectedToken: newToken(PRIMARY, "primary")},
-		{expectedToken: newToken(KEY, "key")},
-		{expectedToken: newToken(COMMA, ",")},
-		{expectedToken: newToken(IDENTIFIER, "year")},
-		{expectedToken: newToken(INT_TYPE, "int")},
-		{expectedToken: newToken(R_PAREN, ")")},
-		{expectedToken: newToken(SEMICOLON, ";")},
+		{expectedToken: NewToken(CREATE, "create")},
+		{expectedToken: NewToken(TABLE, "table")},
+		{expectedToken: NewToken(IDENTIFIER, "cars")},
+		{expectedToken: NewToken(L_PAREN, "(")},
+		{expectedToken: NewToken(IDENTIFIER, "brand")},
+		{expectedToken: NewToken(TEXT_TYPE, "text")},
+		{expectedToken: NewToken(PRIMARY, "primary")},
+		{expectedToken: NewToken(KEY, "key")},
+		{expectedToken: NewToken(COMMA, ",")},
+		{expectedToken: NewToken(IDENTIFIER, "year")},
+		{expectedToken: NewToken(INT_TYPE, "int")},
+		{expectedToken: NewToken(R_PAREN, ")")},
+		{expectedToken: NewToken(SEMICOLON, ";")},
 	}
 
 	for _, test := range tests {

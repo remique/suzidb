@@ -60,7 +60,7 @@ type Token struct {
 	literal   string
 }
 
-func newToken(tokenType TokenType, literal string) Token {
+func NewToken(tokenType TokenType, literal string) Token {
 	return Token{
 		TokenType: tokenType,
 		literal:   literal,

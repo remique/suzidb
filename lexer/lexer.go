@@ -30,7 +30,7 @@ func NewLexer(input string) *Lexer {
 // Consumes a character.
 func (l *Lexer) readChar() {
 	if l.currentPosition >= len(l.input) {
-		l.ch = '0'
+		l.ch = 0
 	} else {
 		l.ch = l.input[l.currentPosition]
 	}
@@ -46,19 +46,23 @@ func (l *Lexer) NextToken() Token {
 
 	switch l.ch {
 	case '=':
-		tok = newToken(EQUALS, "=")
+		tok = NewToken(EQUALS, "=")
 	case '+':
-		tok = newToken(PLUS, "+")
+		tok = NewToken(PLUS, "+")
 	case ';':
-		tok = newToken(SEMICOLON, ";")
+		tok = NewToken(SEMICOLON, ";")
 	case '*':
-		tok = newToken(STAR, "*")
+		tok = NewToken(STAR, "*")
 	case '(':
-		tok = newToken(L_PAREN, "(")
+		tok = NewToken(L_PAREN, "(")
 	case ')':
-		tok = newToken(R_PAREN, ")")
+		tok = NewToken(R_PAREN, ")")
 	case ',':
-		tok = newToken(COMMA, ",")
+		tok = NewToken(COMMA, ",")
+	case 0:
+		tok.literal = ""
+		tok.TokenType = EOF
+		return tok
 	// Handle internal strings
 	case '\'':
 		{
@@ -86,7 +90,7 @@ func (l *Lexer) NextToken() Token {
 
 				return tok
 			} else {
-				return newToken(ILLEGAL, "")
+				return NewToken(ILLEGAL, "")
 			}
 		}
 	}

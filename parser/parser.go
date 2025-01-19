@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"fmt"
+
 	l "example.com/suzidb/lexer"
 )
 
@@ -10,6 +12,7 @@ type Parser struct {
 	peekToken    l.Token
 }
 
+// Parser constructor. We need lexer object, because we parse along with lexing.
 func NewParser(lexer l.Lexer) *Parser {
 	currentToken := lexer.NextToken()
 	peekToken := lexer.NextToken()
@@ -46,7 +49,7 @@ func (p *Parser) parseStatement() (*Statement, error) {
 	switch p.currentToken.TokenType {
 	case "SELECT":
 		{
-			// return p.parseSelectStatement()
+			return p.parseSelectStatement()
 		}
 	case "INSERT":
 		{
@@ -61,25 +64,51 @@ func (p *Parser) parseStatement() (*Statement, error) {
 	return nil, nil
 }
 
-func (p *Parser) parseExpression() {
-	//
+func (p *Parser) parseSelectStatement() (*Statement, error) {
+	// Skip 'SELECT' and then parseSelectItems
+	p.nextToken()
+
+	selectItems, err := p.parseSelectItems()
+	if err != nil {
+		return nil, err
+	}
+
+	// parse 'FROM'
+	p.nextToken()
+	if !p.expectCurrToken(l.FROM) {
+		return nil, fmt.Errorf("Expected FROM")
+	}
+
+	p.nextToken()
+	if !p.expectCurrToken(l.IDENTIFIER) {
+		return nil, fmt.Errorf("Expected IDENTIFIER")
+	}
+
+	selectStmt := SelectStatement{
+		SelectItems: &selectItems,
+		From:        &p.currentToken,
+	}
+
+	return &Statement{SelectStatement: &selectStmt, Kind: SelectKind}, nil
 }
 
-// func (p *Parser) parseSelectStatement() (*Statement, error) {
-// 	// Skip 'SELECT' and then parseSelectItems
-// }
-
+// Method to parse identifiers in Select statement.
+// note(remique): This can probably be done better.
 func (p *Parser) parseSelectItems() ([]l.Token, error) {
 	var items []l.Token
 
-	// Parse while we peek 'FROM' or semicolon
-	// TODO: Expect commas
-	for !(p.expectCurrToken(l.SEMICOLON) || p.expectCurrToken(l.WHERE)) {
-		if p.expectCurrToken(l.IDENTIFIER) {
-			items = append(items, p.currentToken)
-		}
+	// Parse first item
+	items = append(items, p.currentToken)
+
+	for p.expectPeekToken(l.COMMA) {
+		p.nextToken()
 
 		p.nextToken()
+		items = append(items, p.currentToken)
+	}
+
+	if !(p.expectPeekToken(l.SEMICOLON) || p.expectPeekToken(l.FROM)) {
+		return items, fmt.Errorf("Expected either SEMICOLON or FROM")
 	}
 
 	return items, nil

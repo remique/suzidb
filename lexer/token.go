@@ -57,12 +57,12 @@ var keywords = map[string]TokenType{
 
 type Token struct {
 	TokenType TokenType
-	literal   string
+	Literal   string
 }
 
 func NewToken(tokenType TokenType, literal string) Token {
 	return Token{
 		TokenType: tokenType,
-		literal:   literal,
+		Literal:   literal,
 	}
 }

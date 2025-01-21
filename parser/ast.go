@@ -2,6 +2,7 @@ package parser
 
 import (
 	l "example.com/suzidb/lexer"
+	m "example.com/suzidb/meta"
 )
 
 type AstKind uint
@@ -25,7 +26,9 @@ type SelectStatement struct {
 }
 
 type CreateTableStatement struct {
-	//
+	TableName  string
+	PrimaryKey string
+	Columns    *[]m.Column
 }
 
 type InsertStatement struct {

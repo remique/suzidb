@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	l "example.com/suzidb/lexer"
+	m "example.com/suzidb/meta"
 )
 
 type Parser struct {
@@ -57,11 +58,110 @@ func (p *Parser) parseStatement() (*Statement, error) {
 		}
 	case "CREATE":
 		{
-			// parseInsertStatement
+			switch p.peekToken.TokenType {
+			case "TABLE":
+				return p.parseCreateTableStatement()
+			case "INDEX":
+				return nil, fmt.Errorf("Currently unsupported")
+			default:
+				return nil, fmt.Errorf("Expected TABLE or INDEX")
+			}
 		}
 	}
 
 	return nil, nil
+}
+
+func (p *Parser) parseCreateTableStatement() (*Statement, error) {
+	// Consume 'CREATE' and 'TABLE'
+	p.nextToken()
+	p.nextToken()
+
+	// Now expect table name identifier
+	if !p.expectCurrToken(l.IDENTIFIER) {
+		return nil, fmt.Errorf("Expected identifier")
+	}
+
+	tableName := p.currentToken.Literal
+
+	if !p.expectPeekToken(l.L_PAREN) {
+		return nil, fmt.Errorf("Expected L_PAREN")
+	}
+
+	// Now parse column definitions
+	columns, pk, err := p.parseCreateTableColumns()
+	if err != nil {
+		return nil, err
+	}
+
+	createTableStmt := CreateTableStatement{
+		TableName:  tableName,
+		PrimaryKey: *pk,
+		Columns:    columns,
+	}
+
+	return &Statement{CreateTableStatement: &createTableStmt, Kind: CreateTableKind}, nil
+}
+
+func (p *Parser) parseCreateTableColumns() (columns *[]m.Column, primaryKey *string, err error) {
+	pk := ""
+	pkCount := 0
+	result := []m.Column{}
+
+	for {
+		var col m.Column
+		// If EOF or rParen then break
+		if p.expectCurrToken(l.R_PAREN) || p.expectCurrToken(l.EOF) {
+			break
+		}
+
+		if len(result) > 0 {
+			// Expect comma
+			if !p.expectCurrToken(l.COMMA) {
+				return nil, nil, fmt.Errorf("Expected COMMA")
+			}
+			p.nextToken()
+		}
+
+		if !p.expectCurrToken(l.IDENTIFIER) {
+			return nil, nil, fmt.Errorf("Expected Identifier, curr tok: %s", p.currentToken.Literal)
+		}
+
+		col.Name = p.currentToken.Literal
+
+		p.nextToken()
+
+		if !(p.expectCurrToken(l.INT_TYPE) || p.expectCurrToken(l.TEXT_TYPE)) {
+			return nil, nil, fmt.Errorf("Expected TYPE")
+		}
+
+		switch p.currentToken.TokenType {
+		case "TEXT_TYPE":
+			col.Type = m.StringType
+		case "INT_TYPE":
+			col.Type = m.IntType
+		default:
+			return nil, nil, fmt.Errorf("Expected TYPE!")
+		}
+
+		p.nextToken()
+
+		if p.expectCurrToken(l.PRIMARY) && p.expectPeekToken(l.KEY) {
+			if pkCount >= 1 {
+				return nil, nil, fmt.Errorf("Only one PK allowed")
+			}
+			p.nextToken()
+			p.nextToken()
+			fmt.Printf("Current tok after PK: %s", p.currentToken.Literal)
+
+			pk = col.Name
+			pkCount += 1
+		}
+
+		result = append(result, col)
+	}
+
+	return &result, &pk, nil
 }
 
 func (p *Parser) parseSelectStatement() (*Statement, error) {
@@ -93,7 +193,6 @@ func (p *Parser) parseSelectStatement() (*Statement, error) {
 }
 
 // Method to parse identifiers in Select statement.
-// note(remique): This can probably be done better.
 func (p *Parser) parseSelectItems() ([]l.Token, error) {
 	var items []l.Token
 
@@ -113,7 +212,3 @@ func (p *Parser) parseSelectItems() ([]l.Token, error) {
 
 	return items, nil
 }
-
-// func (p *Parser) parseExpression() {
-// 	// todo
-// }

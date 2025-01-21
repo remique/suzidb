@@ -1,9 +1,11 @@
 package parser
 
 import (
+	"reflect"
 	"testing"
 
 	l "example.com/suzidb/lexer"
+	m "example.com/suzidb/meta"
 )
 
 func TestParseSelectItemsSemicolon(t *testing.T) {
@@ -114,16 +116,85 @@ func TestParseStatementWithSelect(t *testing.T) {
 	expected := &Statement{SelectStatement: &selectStmt, Kind: SelectKind}
 
 	stmtRes, _ := parser.parseStatement()
-	if stmtRes.Kind != expected.Kind {
-		t.Fatalf("Expected KIND %q to equal %q", stmtRes.Kind, expected.Kind)
+	if !reflect.DeepEqual(stmtRes, expected) {
+		t.Fatal("Not deeply equal")
 	}
-	if *stmtRes.SelectStatement.From != *expected.SelectStatement.From {
-		t.Fatalf("Expected FROM %q to equal %q", stmtRes.SelectStatement.From,
-			expected.SelectStatement.From)
-	}
-	if stmtRes.SelectStatement.SelectItems != expected.SelectStatement.SelectItems {
-		t.Fatalf("Expected ITEMS %q to equal %q", stmtRes.SelectStatement.SelectItems,
-			expected.SelectStatement.SelectItems)
-	}
-	// TODO
 }
+
+func TestParseStatementWithCreateTableInvalid(t *testing.T) {
+	lexer := l.NewLexer("Create TaBle mytable hehe")
+	parser := NewParser(*lexer)
+
+	_, err := parser.parseCreateTableStatement()
+	if err == nil {
+		t.Fatalf("Expected err: %q", err)
+	}
+}
+
+func TestParseTableColumns(t *testing.T) {
+	lexer := l.NewLexer("id int primary key, name text, surname text")
+	parser := NewParser(*lexer)
+
+	columns := []m.Column{
+		{
+			Name: "id",
+			Type: m.IntType,
+		},
+		{
+			Name: "name",
+			Type: m.StringType,
+		},
+		{
+			Name: "surname",
+			Type: m.StringType,
+		},
+	}
+	createTblStmt := CreateTableStatement{
+		TableName:  "mytable",
+		PrimaryKey: "id",
+		Columns:    &columns,
+	}
+
+	cols, pk, err := parser.parseCreateTableColumns()
+	if !reflect.DeepEqual(*cols, columns) {
+		t.Fatalf("Columns Not deeply equal: %v, %v", *cols, columns)
+	}
+	if *pk != createTblStmt.PrimaryKey {
+		t.Fatalf("pk not equal: %s, %s", *pk, createTblStmt.PrimaryKey)
+	}
+	if err != nil {
+		t.Fatalf("Err: %s", err.Error())
+	}
+}
+
+// func TestParseStatementWithCreateTable(t *testing.T) {
+// 	lexer := l.NewLexer("Create TaBle mytable(id int primary key, name text, surname text);")
+// 	parser := NewParser(*lexer)
+
+// 	columns := []m.Column{
+// 		{
+// 			Name: "id",
+// 			Type: m.IntType,
+// 		},
+// 		{
+// 			Name: "name",
+// 			Type: m.StringType,
+// 		},
+// 		{
+// 			Name: "surname",
+// 			Type: m.StringType,
+// 		},
+// 	}
+// 	createTblStmt := CreateTableStatement{
+// 		TableName:  "mytable",
+// 		PrimaryKey: "id",
+// 		Columns:    &columns,
+// 	}
+
+// 	expected := &Statement{CreateTableStatement: &createTblStmt, Kind: CreateTableKind}
+
+// 	stmtRes, _ := parser.parseCreateTableStatement()
+// 	if !reflect.DeepEqual(stmtRes, expected) {
+// 		t.Fatal("Not deeply equal")
+// 	}
+// }

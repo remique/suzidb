@@ -60,7 +60,7 @@ func (l *Lexer) NextToken() Token {
 	case ',':
 		tok = NewToken(COMMA, ",")
 	case 0:
-		tok.literal = ""
+		tok.Literal = ""
 		tok.TokenType = EOF
 		return tok
 	// Handle internal strings
@@ -69,7 +69,7 @@ func (l *Lexer) NextToken() Token {
 			// Skip first '
 			l.readChar()
 
-			tok.literal = l.readString()
+			tok.Literal = l.readString()
 			tok.TokenType = STRING
 
 			// Skip last '
@@ -80,13 +80,13 @@ func (l *Lexer) NextToken() Token {
 	default:
 		{
 			if isLetter(l.ch) {
-				tok.literal = strings.ToLower(l.readIdentifier())
-				tok.TokenType = lookupIdent(tok.literal)
+				tok.Literal = strings.ToLower(l.readIdentifier())
+				tok.TokenType = lookupIdent(tok.Literal)
 
 				return tok
 			} else if isDigit(l.ch) {
 				tok.TokenType = INT
-				tok.literal = l.readNumber()
+				tok.Literal = l.readNumber()
 
 				return tok
 			} else {

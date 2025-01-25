@@ -1,14 +1,16 @@
 package main
 
 import (
-	e "example.com/suzidb/executor"
 	m "example.com/suzidb/meta"
+	// p "example.com/suzidb/parser"
+	e "example.com/suzidb/executor"
 	p "example.com/suzidb/planner"
 	"example.com/suzidb/storage"
 	"fmt"
 )
 
 func main() {
+
 	myPlan := p.CreateTablePlan{
 		Table: m.Table{
 			Name:       "tableName",

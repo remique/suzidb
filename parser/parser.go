@@ -49,27 +49,66 @@ func (p *Parser) expectPeekToken(expectKind l.TokenType) bool {
 func (p *Parser) parseStatement() (*Statement, error) {
 	switch p.currentToken.TokenType {
 	case "SELECT":
-		{
-			return p.parseSelectStatement()
-		}
+		return p.parseSelectStatement()
 	case "INSERT":
-		{
-			// parseInsertStatement
-		}
+		return p.parseInsertStatement()
 	case "CREATE":
-		{
-			switch p.peekToken.TokenType {
-			case "TABLE":
-				return p.parseCreateTableStatement()
-			case "INDEX":
-				return nil, fmt.Errorf("Currently unsupported")
-			default:
-				return nil, fmt.Errorf("Expected TABLE or INDEX")
-			}
+		switch p.peekToken.TokenType {
+		case "TABLE":
+			return p.parseCreateTableStatement()
+		case "INDEX":
+			return nil, fmt.Errorf("Currently unsupported")
+		default:
+			return nil, fmt.Errorf("Expected TABLE or INDEX")
 		}
 	}
 
 	return nil, nil
+}
+
+func (p *Parser) parseInsertStatement() (*Statement, error) {
+	// Consume `INSERT` and `INTO`
+	p.nextToken()
+	p.nextToken()
+
+	// Now expect table identifier
+	if !p.expectCurrToken(l.IDENTIFIER) {
+		return nil, fmt.Errorf("Expected identifier")
+	}
+
+	// tableName := p.currentToken.Literal
+
+	// then optional (...columnList)
+
+	if p.expectPeekToken(l.L_PAREN) {
+		// parse columnList
+	}
+
+	// Then we parse `VALUES`
+
+	// Then LPAREN
+
+	// Then list of tokens
+
+	// then RPAREN
+
+	return nil, nil
+}
+
+func (p *Parser) parseInsertColumnList() ([]l.Token, error) {
+	var columns []l.Token
+
+	for p.expectCurrToken(l.IDENTIFIER) {
+		columns = append(columns, p.currentToken)
+
+		// Skip ','
+		p.nextToken()
+
+		// Fetch next IDENTIFIER
+		p.nextToken()
+	}
+
+	return columns, nil
 }
 
 func (p *Parser) parseCreateTableStatement() (*Statement, error) {
@@ -87,6 +126,12 @@ func (p *Parser) parseCreateTableStatement() (*Statement, error) {
 	if !p.expectPeekToken(l.L_PAREN) {
 		return nil, fmt.Errorf("Expected L_PAREN")
 	}
+
+	// Skip '('
+	p.nextToken()
+
+	// Go to first item in columns
+	p.nextToken()
 
 	// Now parse column definitions
 	columns, pk, err := p.parseCreateTableColumns()
@@ -132,6 +177,7 @@ func (p *Parser) parseCreateTableColumns() (columns *[]m.Column, primaryKey *str
 		p.nextToken()
 
 		if !(p.expectCurrToken(l.INT_TYPE) || p.expectCurrToken(l.TEXT_TYPE)) {
+			fmt.Printf("Current token: %+v, nextToken: %+v", p.currentToken, p.peekToken)
 			return nil, nil, fmt.Errorf("Expected TYPE")
 		}
 
@@ -152,7 +198,6 @@ func (p *Parser) parseCreateTableColumns() (columns *[]m.Column, primaryKey *str
 			}
 			p.nextToken()
 			p.nextToken()
-			fmt.Printf("Current tok after PK: %s", p.currentToken.Literal)
 
 			pk = col.Name
 			pkCount += 1

@@ -6,6 +6,7 @@ import (
 
 	l "example.com/suzidb/lexer"
 	m "example.com/suzidb/meta"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParseSelectItemsSemicolon(t *testing.T) {
@@ -167,34 +168,62 @@ func TestParseTableColumns(t *testing.T) {
 	}
 }
 
-// func TestParseStatementWithCreateTable(t *testing.T) {
-// 	lexer := l.NewLexer("Create TaBle mytable(id int primary key, name text, surname text);")
+func TestParseTableColumnsOnePKAllowed(t *testing.T) {
+	lexer := l.NewLexer("id int primary key, name text primary key")
+	parser := NewParser(*lexer)
+
+	_, _, err := parser.parseCreateTableColumns()
+	if err == nil {
+		t.Fatal("Expected error")
+	}
+}
+
+func TestParseStatementWithCreateTable(t *testing.T) {
+	lexer := l.NewLexer("Create TaBle mytable(id int primary key, name text, surname text);")
+	parser := NewParser(*lexer)
+
+	createTblStmt := CreateTableStatement{
+		TableName:  "mytable",
+		PrimaryKey: "id",
+		Columns: &[]m.Column{
+			{
+				Name: "id",
+				Type: m.IntType,
+			},
+			{
+				Name: "name",
+				Type: m.StringType,
+			},
+			{
+				Name: "surname",
+				Type: m.StringType,
+			},
+		},
+	}
+
+	expected := &Statement{CreateTableStatement: &createTblStmt, Kind: CreateTableKind}
+
+	stmtRes, _ := parser.parseCreateTableStatement()
+	assert.Equal(t, expected, stmtRes, "CreateTableStatements should be the same")
+}
+
+func TestParseInsertParseColumns(t *testing.T) {
+	lexer := l.NewLexer("id, name, surname")
+	parser := NewParser(*lexer)
+
+	expected := []l.Token{
+		l.NewToken(l.IDENTIFIER, "id"),
+		l.NewToken(l.IDENTIFIER, "name"),
+		l.NewToken(l.IDENTIFIER, "surname"),
+	}
+
+	cols, _ := parser.parseInsertColumnList()
+	assert.Equal(t, expected, cols, "Insert column names should be the same")
+}
+
+// func TestParseInsertStatement(t *testing.T) {
+// 	lexer := l.NewLexer("insert into mytable(id, name, surname) values (1, 'john', 'smith');")
 // 	parser := NewParser(*lexer)
 
-// 	columns := []m.Column{
-// 		{
-// 			Name: "id",
-// 			Type: m.IntType,
-// 		},
-// 		{
-// 			Name: "name",
-// 			Type: m.StringType,
-// 		},
-// 		{
-// 			Name: "surname",
-// 			Type: m.StringType,
-// 		},
-// 	}
-// 	createTblStmt := CreateTableStatement{
-// 		TableName:  "mytable",
-// 		PrimaryKey: "id",
-// 		Columns:    &columns,
-// 	}
-
-// 	expected := &Statement{CreateTableStatement: &createTblStmt, Kind: CreateTableKind}
-
-// 	stmtRes, _ := parser.parseCreateTableStatement()
-// 	if !reflect.DeepEqual(stmtRes, expected) {
-// 		t.Fatal("Not deeply equal")
-// 	}
+// 	// todo
 // }

@@ -221,9 +221,43 @@ func TestParseInsertParseColumns(t *testing.T) {
 	assert.Equal(t, expected, cols, "Insert column names should be the same")
 }
 
-// func TestParseInsertStatement(t *testing.T) {
-// 	lexer := l.NewLexer("insert into mytable(id, name, surname) values (1, 'john', 'smith');")
-// 	parser := NewParser(*lexer)
+func TestParseInsertParseValues(t *testing.T) {
+	lexer := l.NewLexer("'john', 'smith', 1")
+	parser := NewParser(*lexer)
 
-// 	// todo
-// }
+	expected := []l.Token{
+		l.NewToken(l.STRING, "john"),
+		l.NewToken(l.STRING, "smith"),
+		l.NewToken(l.INT, "1"),
+	}
+
+	vals, _ := parser.parseInsertValues()
+	assert.Equal(t, expected, vals, "Insert values should be the same")
+}
+
+func TestParseInsertStatementWithCustomCols(t *testing.T) {
+	lexer := l.NewLexer("insert into mytable(id, name, surname) values (1, 'john', 'smith');")
+	parser := NewParser(*lexer)
+
+	insertStmt := InsertStatement{
+		TableName: "mytable",
+		CustomColumns: []l.Token{
+			l.NewToken(l.IDENTIFIER, "id"),
+			l.NewToken(l.IDENTIFIER, "name"),
+			l.NewToken(l.IDENTIFIER, "surname"),
+		},
+		Values: []l.Token{
+			l.NewToken(l.INT, "1"),
+			l.NewToken(l.STRING, "john"),
+			l.NewToken(l.STRING, "smith"),
+		},
+	}
+
+	expected := &Statement{InsertStatement: &insertStmt, Kind: InsertKind}
+
+	stmt, err := parser.parseInsertStatement()
+	if err != nil {
+		t.Fatalf("err %s", err.Error())
+	}
+	assert.Equal(t, expected.InsertStatement, stmt.InsertStatement, "Expected statements to be the same")
+}

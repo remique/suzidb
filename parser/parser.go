@@ -67,6 +67,8 @@ func (p *Parser) parseStatement() (*Statement, error) {
 }
 
 func (p *Parser) parseInsertStatement() (*Statement, error) {
+	var cols []l.Token
+
 	// Consume `INSERT` and `INTO`
 	p.nextToken()
 	p.nextToken()
@@ -76,23 +78,46 @@ func (p *Parser) parseInsertStatement() (*Statement, error) {
 		return nil, fmt.Errorf("Expected identifier")
 	}
 
-	// tableName := p.currentToken.Literal
+	tableName := p.currentToken.Literal
 
 	// then optional (...columnList)
-
 	if p.expectPeekToken(l.L_PAREN) {
+		p.nextToken()
+		p.nextToken()
+
 		// parse columnList
+		customCols, err := p.parseInsertColumnList()
+		if err != nil {
+			return nil, err
+		}
+
+		cols = customCols
 	}
 
 	// Then we parse `VALUES`
+	if !p.expectCurrToken(l.VALUES) {
+		return nil, fmt.Errorf("Expected VALUES")
+	}
+
+	p.nextToken()
 
 	// Then LPAREN
 
+	p.nextToken()
+
 	// Then list of tokens
+	values, err := p.parseInsertValues()
+	if err != nil {
+		return nil, err
+	}
 
-	// then RPAREN
+	insertStmt := InsertStatement{
+		TableName:     tableName,
+		CustomColumns: cols,
+		Values:        values,
+	}
 
-	return nil, nil
+	return &Statement{InsertStatement: &insertStmt, Kind: InsertKind}, nil
 }
 
 func (p *Parser) parseInsertColumnList() ([]l.Token, error) {
@@ -109,6 +134,24 @@ func (p *Parser) parseInsertColumnList() ([]l.Token, error) {
 	}
 
 	return columns, nil
+}
+
+func (p *Parser) parseInsertValues() ([]l.Token, error) {
+	var vals []l.Token
+
+	fmt.Println(p.currentToken)
+
+	for p.expectCurrToken(l.INT) || p.expectCurrToken(l.STRING) {
+		vals = append(vals, p.currentToken)
+
+		// Skip ','
+		p.nextToken()
+
+		// Fetch next TYPE
+		p.nextToken()
+	}
+
+	return vals, nil
 }
 
 func (p *Parser) parseCreateTableStatement() (*Statement, error) {

@@ -31,17 +31,12 @@ type CreateTableStatement struct {
 	Columns    *[]m.Column
 }
 
-type InsertValue struct {
-	value      l.Token
-	columnName string
-}
-
 type InsertStatement struct {
 	TableName string
 	// If specific order is specified, push it to this array
-	customColumns []l.Token
+	CustomColumns []l.Token
 
-	values []InsertValue
+	Values []l.Token
 }
 
 /*

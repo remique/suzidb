@@ -67,7 +67,7 @@ func (p *Parser) parseStatement() (*Statement, error) {
 }
 
 func (p *Parser) parseInsertStatement() (*Statement, error) {
-	var cols []l.Token
+	cols := []l.Token{}
 
 	// Consume `INSERT` and `INTO`
 	p.nextToken()
@@ -92,6 +92,8 @@ func (p *Parser) parseInsertStatement() (*Statement, error) {
 		}
 
 		cols = customCols
+	} else {
+		p.nextToken()
 	}
 
 	// Then we parse `VALUES`

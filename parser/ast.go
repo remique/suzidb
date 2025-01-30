@@ -39,31 +39,6 @@ type InsertStatement struct {
 	Values []l.Token
 }
 
-/*
-Insert statement needs to have an array of structure
-struct InsertValue {
-	value Token
-	columnName string
-}
-
-If the columnList is empty, then we assume original
-sequence.
-
-I guess we would have to change the plan so that
-it does not have []m.Row but []InsertValue
-
-and then in executor
-row := m.Row
-for value := range insertValues {
-	// Check for type
-	row[value.columnName] = value.value
-}
-
-And then iterate over columns, find if if has a key
-if it does not, check if column is nullable.
-
-*/
-
 type ExpressionKind uint
 
 const (

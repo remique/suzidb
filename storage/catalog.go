@@ -32,6 +32,9 @@ func (sm *SchemaManager) CreateTable(name string, schema meta.Table) error {
 
 func (sm *SchemaManager) GetTable(name string) (*meta.Table, error) {
 	res := sm.Storage.Get("meta:" + name)
+	if len(res) == 0 {
+		return nil, nil
+	}
 
 	var deserializedSchema meta.Table
 	err := json.Unmarshal([]byte(res), &deserializedSchema)

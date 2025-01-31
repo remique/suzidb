@@ -43,10 +43,7 @@ func main() {
 				},
 			},
 		},
-		Rows: []m.Row{
-			{"columnName": 1, "columnName2": "Alice"},
-			{"columnName": 2, "columnName2": "Bob"},
-		},
+		Row: m.Row{"columnName": 2, "columnName2": "Bob"},
 	}
 
 	myPlan3 := p.QueryTablePlan{

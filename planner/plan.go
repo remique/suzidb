@@ -22,9 +22,11 @@ type CreateTablePlan struct {
 	Table m.Table
 }
 
+// TODO: Support multiple Rows: Rows []m.Row,
+// This change needs to be supported in Parser as well ([][]m.Column)
 type InsertPlan struct {
 	Table m.Table
-	Rows  []m.Row
+	Row   m.Row
 }
 
 // Temporary plan, before actual query plan.

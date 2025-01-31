@@ -74,11 +74,9 @@ func (e *Executor) ExecutePlan(plan p.Plan) (string, error) {
 
 		return "created", nil
 	case *p.InsertPlan:
-		for _, row := range p.Rows {
-			err := e.InsertRow(p.Table, row)
-			if err != nil {
-				return "", err
-			}
+		err := e.InsertRow(p.Table, p.Row)
+		if err != nil {
+			return "", err
 		}
 
 		return "inserted", nil

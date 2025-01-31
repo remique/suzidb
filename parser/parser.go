@@ -119,6 +119,10 @@ func (p *Parser) parseInsertStatement() (*Statement, error) {
 		Values:        values,
 	}
 
+	if len(cols) > 0 && len(cols) != len(values) {
+		return nil, fmt.Errorf("Got %d columns and %d values", len(cols), len(values))
+	}
+
 	return &Statement{InsertStatement: &insertStmt, Kind: InsertKind}, nil
 }
 

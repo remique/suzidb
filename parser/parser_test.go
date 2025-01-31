@@ -262,6 +262,15 @@ func TestParseInsertStatementWithCustomCols(t *testing.T) {
 	assert.Equal(t, expected.InsertStatement, stmt.InsertStatement, "Expected statements to be the same")
 }
 
+func TestParseInsertStatementWithCustomColsNotMatching(t *testing.T) {
+	lexer := l.NewLexer("insert into mytable(id, name) values (1, 'john', 'smith');")
+	parser := NewParser(*lexer)
+
+	// TODO: Use interface and assert.Equal(nil)
+	_, err := parser.parseInsertStatement()
+	assert.Error(t, err)
+}
+
 func TestParseInsertStatementWithoutColumnNames(t *testing.T) {
 	lexer := l.NewLexer("insert into mytable values (1, 'john', 'smith');")
 	parser := NewParser(*lexer)

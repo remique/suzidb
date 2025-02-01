@@ -136,7 +136,7 @@ func TestNextTokenInsertQuery(t *testing.T) {
 }
 
 func TestNextTokenCreateTableQuery(t *testing.T) {
-	lexer := NewLexer("CREATE TABLE cars(brand TEXT primary kEy, year INT);")
+	lexer := NewLexer("CREATE TABLE cars(brand TEXT primary kEy, year INT not NuLL);")
 
 	tests := []struct {
 		expectedToken Token
@@ -152,6 +152,8 @@ func TestNextTokenCreateTableQuery(t *testing.T) {
 		{expectedToken: NewToken(COMMA, ",")},
 		{expectedToken: NewToken(IDENTIFIER, "year")},
 		{expectedToken: NewToken(INT_TYPE, "int")},
+		{expectedToken: NewToken(NOT, "not")},
+		{expectedToken: NewToken(NULL, "null")},
 		{expectedToken: NewToken(R_PAREN, ")")},
 		{expectedToken: NewToken(SEMICOLON, ";")},
 	}

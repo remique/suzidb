@@ -26,6 +26,8 @@ const (
 	TABLE   = "TABLE"
 	PRIMARY = "PRIMARY"
 	KEY     = "KEY"
+	NOT     = "NOT"
+	NULL    = "NULL"
 
 	// (Keywords) To denote a type in CREATE TABLE statement
 	TEXT_TYPE = "TEXT_TYPE"
@@ -53,6 +55,8 @@ var keywords = map[string]TokenType{
 	"key":     KEY,
 	"text":    TEXT_TYPE,
 	"int":     INT_TYPE,
+	"not":     NOT,
+	"null":    NULL,
 }
 
 type Token struct {

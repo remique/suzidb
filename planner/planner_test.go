@@ -3,6 +3,7 @@ package planner
 import (
 	"testing"
 
+	l "example.com/suzidb/lexer"
 	m "example.com/suzidb/meta"
 	"example.com/suzidb/mocks"
 	p "example.com/suzidb/parser"
@@ -75,4 +76,85 @@ func TestBuildCreateTableAlreadyExists(t *testing.T) {
 	plan, err := planner.buildCreateTable(stmt)
 	assert.Error(t, err)
 	assert.Equal(t, nil, plan)
+}
+
+func TestBuildInsertPlan(t *testing.T) {
+	mockCatalog := &mocks.MockCatalog{
+		GetTableFunc: func(name string) (*m.Table, error) {
+			return &m.Table{
+				Name:       "mytable",
+				PrimaryKey: "id",
+				Columns: []m.Column{
+					{Name: "id", Type: m.IntType},
+					{Name: "name", Type: m.StringType},
+				},
+			}, nil
+		},
+	}
+	planner := NewPlanner(mockCatalog)
+
+	stmt := p.Statement{
+		Kind: p.InsertKind,
+		InsertStatement: &p.InsertStatement{
+			TableName: "mytable",
+			Values:    []l.Token{l.NewToken(l.INT_TYPE, "10"), l.NewToken(l.TEXT_TYPE, "john")},
+		},
+	}
+
+	expected := InsertPlan{
+		Table: m.Table{
+			Name:       "mytable",
+			PrimaryKey: "id",
+			Columns: []m.Column{
+				{Name: "id", Type: m.IntType},
+				{Name: "name", Type: m.StringType},
+			},
+		},
+		Row: m.Row{"id": "10", "name": "john"},
+	}
+
+	plan, err := planner.buildInsert(stmt)
+	assert.Equal(t, plan, &expected, "Expected Plan should be the same")
+	assert.NoError(t, err)
+}
+
+func TestBuildInsertPlanCustomCols(t *testing.T) {
+	mockCatalog := &mocks.MockCatalog{
+		GetTableFunc: func(name string) (*m.Table, error) {
+			return &m.Table{
+				Name:       "mytable",
+				PrimaryKey: "id",
+				Columns: []m.Column{
+					{Name: "id", Type: m.IntType},
+					{Name: "name", Type: m.StringType},
+				},
+			}, nil
+		},
+	}
+	planner := NewPlanner(mockCatalog)
+
+	stmt := p.Statement{
+		Kind: p.InsertKind,
+		InsertStatement: &p.InsertStatement{
+			TableName:     "mytable",
+			CustomColumns: []l.Token{l.NewToken(l.IDENTIFIER, "name"), l.NewToken(l.IDENTIFIER, "id")},
+			Values:        []l.Token{l.NewToken(l.TEXT_TYPE, "john"), l.NewToken(l.INT_TYPE, "10")},
+		},
+	}
+
+	expected := InsertPlan{
+		Table: m.Table{
+			Name:       "mytable",
+			PrimaryKey: "id",
+			Columns: []m.Column{
+				{Name: "id", Type: m.IntType},
+				{Name: "name", Type: m.StringType},
+			},
+		},
+		Row: m.Row{"id": "10", "name": "john"},
+	}
+
+	plan, err := planner.buildInsert(stmt)
+	assert.Equal(t, plan, &expected, "Expected Plan should be the same")
+	assert.NoError(t, err)
 }

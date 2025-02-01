@@ -49,7 +49,6 @@ func (pl *Planner) buildCreateTable(statement p.Statement) (Plan, error) {
 }
 
 func (pl *Planner) buildInsert(stmt p.Statement) (Plan, error) {
-	// var row m.Row
 	row := make(map[string]interface{})
 
 	// Get table
@@ -68,12 +67,8 @@ func (pl *Planner) buildInsert(stmt p.Statement) (Plan, error) {
 			len(stmt.InsertStatement.CustomColumns), len(stmt.InsertStatement.Values))
 	}
 
-	// If len(stmt.CustomColumns) == 0, then we for loop on the values and assign it to row
-	// and push the row
+	// TODO: Refactor this
 	if len(stmt.InsertStatement.CustomColumns) == 0 {
-		// NOTE: Or we could not have this if and simply find in customCols the index that we need
-		// Then instead of [i] we would assign it. If not found in customCols then we check if
-		// The column is nullable. If not, the return error, else all good.
 		for i, c := range table.Columns {
 			// Check the type
 			currTok := stmt.InsertStatement.Values[i]

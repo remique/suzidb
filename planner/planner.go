@@ -82,12 +82,20 @@ func (pl *Planner) buildInsert(stmt p.Statement) (Plan, error) {
 		for _, c := range table.Columns {
 			// Get index of customCols
 			idx := getColumnIndex(stmt.InsertStatement.CustomColumns, c.Name)
-			currTok := stmt.InsertStatement.Values[idx]
-			if c.Type != tokenToColumnType(currTok) {
-				return nil, fmt.Errorf("Expected %d, got %d", c.Type, tokenToColumnType(currTok))
-			}
+			if idx == -1 {
+				if c.Nullable == true {
+					row[c.Name] = ""
+				} else {
+					return nil, fmt.Errorf("Error while getting column")
+				}
+			} else {
+				currTok := stmt.InsertStatement.Values[idx]
+				if c.Type != tokenToColumnType(currTok) {
+					return nil, fmt.Errorf("Expected %d, got %d", c.Type, tokenToColumnType(currTok))
+				}
 
-			row[c.Name] = currTok.Literal
+				row[c.Name] = currTok.Literal
+			}
 		}
 	}
 

@@ -145,8 +145,6 @@ func (p *Parser) parseInsertColumnList() ([]l.Token, error) {
 func (p *Parser) parseInsertValues() ([]l.Token, error) {
 	var vals []l.Token
 
-	fmt.Println(p.currentToken)
-
 	for p.expectCurrToken(l.INT) || p.expectCurrToken(l.STRING) {
 		vals = append(vals, p.currentToken)
 
@@ -204,6 +202,10 @@ func (p *Parser) parseCreateTableColumns() (columns *[]m.Column, primaryKey *str
 
 	for {
 		var col m.Column
+
+		// Set column to be nullable by default
+		col.Nullable = true
+
 		// If EOF or rParen then break
 		if p.expectCurrToken(l.R_PAREN) || p.expectCurrToken(l.EOF) {
 			break
@@ -245,11 +247,21 @@ func (p *Parser) parseCreateTableColumns() (columns *[]m.Column, primaryKey *str
 			if pkCount >= 1 {
 				return nil, nil, fmt.Errorf("Only one PK allowed")
 			}
+
+			col.Nullable = false
+
 			p.nextToken()
 			p.nextToken()
 
 			pk = col.Name
 			pkCount += 1
+		}
+
+		if p.expectCurrToken(l.NOT) && p.expectPeekToken(l.NULL) {
+			p.nextToken()
+			p.nextToken()
+
+			col.Nullable = false
 		}
 
 		result = append(result, col)

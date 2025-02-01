@@ -133,21 +133,24 @@ func TestParseStatementWithCreateTableInvalid(t *testing.T) {
 }
 
 func TestParseTableColumns(t *testing.T) {
-	lexer := l.NewLexer("id int primary key, name text, surname text")
+	lexer := l.NewLexer("id int primary key, name text NOT NULL, surname text")
 	parser := NewParser(*lexer)
 
 	columns := []m.Column{
 		{
-			Name: "id",
-			Type: m.IntType,
+			Name:     "id",
+			Type:     m.IntType,
+			Nullable: false,
 		},
 		{
-			Name: "name",
-			Type: m.StringType,
+			Name:     "name",
+			Type:     m.StringType,
+			Nullable: false,
 		},
 		{
-			Name: "surname",
-			Type: m.StringType,
+			Name:     "surname",
+			Type:     m.StringType,
+			Nullable: true,
 		},
 	}
 	createTblStmt := CreateTableStatement{
@@ -187,16 +190,19 @@ func TestParseStatementWithCreateTable(t *testing.T) {
 		PrimaryKey: "id",
 		Columns: &[]m.Column{
 			{
-				Name: "id",
-				Type: m.IntType,
+				Name:     "id",
+				Type:     m.IntType,
+				Nullable: false,
 			},
 			{
-				Name: "name",
-				Type: m.StringType,
+				Name:     "name",
+				Type:     m.StringType,
+				Nullable: true,
 			},
 			{
-				Name: "surname",
-				Type: m.StringType,
+				Name:     "surname",
+				Type:     m.StringType,
+				Nullable: true,
 			},
 		},
 	}

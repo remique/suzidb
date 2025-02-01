@@ -8,8 +8,9 @@ const (
 )
 
 type Column struct {
-	Name string
-	Type ColumnType
+	Name     string
+	Type     ColumnType
+	Nullable bool
 }
 
 type Table struct {

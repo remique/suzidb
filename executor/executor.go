@@ -19,80 +19,70 @@ func NewExecutor(storage s.Storage, catalog s.Catalog) *Executor {
 	return &Executor{Storage: storage, Catalog: catalog}
 }
 
-func (e *Executor) CreateTable(table m.Table) error {
-	return e.Catalog.CreateTable(table.Name, table)
+func (e *Executor) ExecutePlan(plan p.Plan) (ExecutionResult, error) {
+	switch p := plan.(type) {
+	case *p.CreateTablePlan:
+		return e.executeCreateTable(*p)
+	case *p.InsertPlan:
+		return e.executeInsert(*p)
+	case *p.SelectPlan:
+		return e.executeSelect(*p)
+	default:
+		return nil, fmt.Errorf("Invalid query")
+	}
 }
 
-func (e *Executor) GetTable(name string) (*m.Table, error) {
-	return e.Catalog.GetTable(name)
-}
-
-func (e *Executor) InsertRow(table m.Table, row m.Row) error {
-	key := fmt.Sprintf("%s:%s", table.Name, row[table.PrimaryKey])
-	serializedRow, err := json.Marshal(row)
+func (e *Executor) executeCreateTable(createTablePlan p.CreateTablePlan) (ExecutionResult, error) {
+	err := e.Catalog.CreateTable(createTablePlan.Table.Name, createTablePlan.Table)
 	if err != nil {
-		return err
+		return nil, err
+	}
+
+	return &CreateTableResult{TableName: createTablePlan.Table.Name}, nil
+}
+
+func (e *Executor) executeInsert(insertPlan p.InsertPlan) (ExecutionResult, error) {
+	key := fmt.Sprintf("%s:%s", insertPlan.Table.Name, insertPlan.Row[insertPlan.Table.PrimaryKey])
+	serializedRow, err := json.Marshal(insertPlan.Row)
+	if err != nil {
+		return nil, err
 	}
 
 	err = e.Storage.Set(key, string(serializedRow))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	// Hardcoded for now, as we can insert only one row
+	return &InsertResult{Count: 1}, nil
 }
 
-// Queries entire table with its contents.
-func (e *Executor) QueryTable(tableName string) ([]m.Row, error) {
+func (e *Executor) executeSelect(selectPlan p.SelectPlan) (ExecutionResult, error) {
+	switch internal := selectPlan.Node.(type) {
+	case *p.NodeScan:
+		return e.executeNodeScan(*internal)
+	default:
+		return nil, fmt.Errorf("Invalid Node query")
+	}
+}
+
+func (e *Executor) executeNodeScan(node p.NodeScan) (ExecutionResult, error) {
 	var rows []m.Row
 
 	allKeys := e.Storage.ScanKeys()
 	for _, key := range allKeys {
-		if strings.Contains(key, tableName) && !strings.Contains(key, "meta") {
+		if strings.Contains(key, node.Table.Name) && !strings.Contains(key, "meta") {
 			res := e.Storage.Get(key)
 
 			var row m.Row
 			err := json.Unmarshal([]byte(res), &row)
 			if err != nil {
-				return rows, err
+				return nil, err
 			}
 
 			rows = append(rows, row)
 		}
 	}
 
-	return rows, nil
-}
-
-func (e *Executor) ExecutePlan(plan p.Plan) (string, error) {
-	switch p := plan.(type) {
-	case *p.CreateTablePlan:
-		err := e.CreateTable(p.Table)
-		if err != nil {
-			return "", err
-		}
-
-		return "created", nil
-	case *p.InsertPlan:
-		err := e.InsertRow(p.Table, p.Row)
-		if err != nil {
-			return "", err
-		}
-
-		return "inserted", nil
-	case *p.QueryTablePlan:
-		rowsRes, err := e.QueryTable(p.TableName)
-		if err != nil {
-			return "", err
-		}
-
-		rowBytes, err := json.Marshal(rowsRes)
-		if err != nil {
-			return "", err
-		}
-
-		return "Query:" + string(rowBytes), nil
-	default:
-		return "blabla", nil
-	}
+	return &SelectResult{Rows: rows, Columns: node.Table.Columns}, nil
 }

@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"reflect"
 	"testing"
 
 	l "example.com/suzidb/lexer"
@@ -93,9 +92,7 @@ func TestParseSelectStatementNoFrom(t *testing.T) {
 	parser := NewParser(*lexer)
 
 	_, err := parser.parseSelectStatement()
-	if err == nil {
-		t.Fatalf("Expected err: %q", err)
-	}
+	assert.Error(t, err)
 }
 
 func TestParseSelectStatementNoIdentifierAfterFrom(t *testing.T) {
@@ -103,28 +100,26 @@ func TestParseSelectStatementNoIdentifierAfterFrom(t *testing.T) {
 	parser := NewParser(*lexer)
 
 	_, err := parser.parseSelectStatement()
-	if err == nil {
-		t.Fatalf("Expected err: %q", err)
-	}
+	assert.Error(t, err)
 }
 
 func TestParseStatementWithSelect(t *testing.T) {
 	lexer := l.NewLexer("select * FROM myTable;")
 	parser := NewParser(*lexer)
 
-	from := l.NewToken(l.IDENTIFIER, "mytable")
-	selectStmt := SelectStatement{
-		SelectItems: &[]l.Token{
-			l.NewToken(l.STAR, "*"),
+	expected := &Statement{
+		Kind: SelectKind,
+		SelectStatement: &SelectStatement{
+			SelectItems: &[]l.Token{
+				l.NewToken(l.STAR, "*"),
+			},
+			From: &l.Token{TokenType: l.IDENTIFIER, Literal: "mytable"},
 		},
-		From: &from,
 	}
-	expected := &Statement{SelectStatement: &selectStmt, Kind: SelectKind}
 
-	stmtRes, _ := parser.parseStatement()
-	if !reflect.DeepEqual(stmtRes, expected) {
-		t.Fatal("Not deeply equal")
-	}
+	stmtRes, err := parser.parseStatement()
+	assert.NoError(t, err)
+	assert.Equal(t, expected, stmtRes)
 }
 
 func TestParseStatementWithCreateTableInvalid(t *testing.T) {
@@ -132,48 +127,39 @@ func TestParseStatementWithCreateTableInvalid(t *testing.T) {
 	parser := NewParser(*lexer)
 
 	_, err := parser.parseCreateTableStatement()
-	if err == nil {
-		t.Fatalf("Expected err: %q", err)
-	}
+	assert.Error(t, err)
 }
 
 func TestParseTableColumns(t *testing.T) {
 	lexer := l.NewLexer("id int primary key, name text NOT NULL, surname text")
 	parser := NewParser(*lexer)
 
-	columns := []m.Column{
-		{
-			Name:     "id",
-			Type:     m.IntType,
-			Nullable: false,
-		},
-		{
-			Name:     "name",
-			Type:     m.StringType,
-			Nullable: false,
-		},
-		{
-			Name:     "surname",
-			Type:     m.StringType,
-			Nullable: true,
-		},
-	}
 	createTblStmt := CreateTableStatement{
 		TableName:  "mytable",
 		PrimaryKey: "id",
-		Columns:    &columns,
+		Columns: &[]m.Column{
+			{
+				Name:     "id",
+				Type:     m.IntType,
+				Nullable: false,
+			},
+			{
+				Name:     "name",
+				Type:     m.StringType,
+				Nullable: false,
+			},
+			{
+				Name:     "surname",
+				Type:     m.StringType,
+				Nullable: true,
+			},
+		},
 	}
 
 	cols, pk, err := parser.parseCreateTableColumns()
-	if !reflect.DeepEqual(*cols, columns) {
-		t.Fatalf("Columns Not deeply equal: %v, %v", *cols, columns)
-	}
-	if *pk != createTblStmt.PrimaryKey {
-		t.Fatalf("pk not equal: %s, %s", *pk, createTblStmt.PrimaryKey)
-	}
-	if err != nil {
-		t.Fatalf("Err: %s", err.Error())
-	}
+	assert.NoError(t, err)
+	assert.Equal(t, createTblStmt.Columns, cols)
+	assert.Equal(t, createTblStmt.PrimaryKey, *pk)
 }
 
 func TestParseTableColumnsOnePKAllowed(t *testing.T) {
@@ -181,9 +167,7 @@ func TestParseTableColumnsOnePKAllowed(t *testing.T) {
 	parser := NewParser(*lexer)
 
 	_, _, err := parser.parseCreateTableColumns()
-	if err == nil {
-		t.Fatal("Expected error")
-	}
+	assert.Error(t, err)
 }
 
 func TestParseStatementWithCreateTable(t *testing.T) {

@@ -23,11 +23,11 @@ func TestParseSelectItemsSemicolon(t *testing.T) {
 		},
 	}
 
-	items, _ := parser.parseSelectItems()
+	items, err := parser.parseSelectItems()
+	assert.NoError(t, err)
+
 	for i := range tests.expectedItems {
-		if items[i] != tests.expectedItems[i] {
-			t.Fatalf("Expected item: %q, got: %q", tests.expectedItems[i], items[i])
-		}
+		assert.Equal(t, tests.expectedItems[i], items[i])
 	}
 }
 
@@ -45,11 +45,11 @@ func TestParseSelectItemsWhere(t *testing.T) {
 		},
 	}
 
-	items, _ := parser.parseSelectItems()
+	items, err := parser.parseSelectItems()
+	assert.NoError(t, err)
+
 	for i := range tests.expectedItems {
-		if items[i] != tests.expectedItems[i] {
-			t.Fatalf("Expected item: %q, got: %q", tests.expectedItems[i], items[i])
-		}
+		assert.Equal(t, tests.expectedItems[i], items[i])
 	}
 }
 
@@ -57,10 +57,9 @@ func TestParseSelectItemsExpectedSemicolonOrWhere(t *testing.T) {
 	lexer := l.NewLexer("a,c")
 	parser := NewParser(*lexer)
 
+	// NOTE: This should probably return nil?
 	_, err := parser.parseSelectItems()
-	if err == nil {
-		t.Fatalf("Expected err to not be nil")
-	}
+	assert.Error(t, err)
 }
 
 func TestParseSelectItemsExpectedComma(t *testing.T) {
@@ -68,19 +67,25 @@ func TestParseSelectItemsExpectedComma(t *testing.T) {
 	parser := NewParser(*lexer)
 
 	_, err := parser.parseSelectItems()
-	if err == nil {
-		t.Fatalf("Expected err to not be nil")
-	}
+	assert.Error(t, err)
 }
 
 func TestParseSelectStatement(t *testing.T) {
 	lexer := l.NewLexer("select * from myTable;")
 	parser := NewParser(*lexer)
 
-	_, err := parser.parseSelectStatement()
-	if err != nil {
-		t.Fatalf("err: %q", err)
+	expected := Statement{
+		Kind: SelectKind,
+		SelectStatement: &SelectStatement{
+			SelectItems: &[]l.Token{
+				l.NewToken(l.STAR, "*"),
+			},
+			From: &l.Token{TokenType: l.IDENTIFIER, Literal: "mytable"},
+		},
 	}
+	res, err := parser.parseSelectStatement()
+	assert.NoError(t, err)
+	assert.Equal(t, &expected, res)
 }
 
 func TestParseSelectStatementNoFrom(t *testing.T) {

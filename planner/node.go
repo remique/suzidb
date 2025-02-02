@@ -44,7 +44,7 @@ func NewNodeBuilder(c storage.Catalog) *NodeBuilder {
 	return &NodeBuilder{Catalog: c}
 }
 
-func (nb *NodeBuilder) buildNode(statement parser.Statement) (NodeQuery, error) {
+func (nb *NodeBuilder) BuildNode(statement parser.Statement) (NodeQuery, error) {
 	switch statement.Kind {
 	case parser.SelectKind:
 		{

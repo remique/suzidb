@@ -19,6 +19,8 @@ func (pl *Planner) Build(statement p.Statement) (Plan, error) {
 		return pl.buildCreateTable(statement)
 	case p.InsertKind:
 		return pl.buildInsert(statement)
+	case p.SelectKind:
+		return pl.buildSelect(statement)
 	}
 
 	return nil, nil
@@ -100,6 +102,17 @@ func (pl *Planner) buildInsert(stmt p.Statement) (Plan, error) {
 	}
 
 	return &InsertPlan{Table: *table, Row: row}, nil
+}
+
+func (pl *Planner) buildSelect(stmt p.Statement) (Plan, error) {
+	nb := NewNodeBuilder(pl.Catalog)
+
+	node, err := nb.BuildNode(stmt)
+	if err != nil {
+		return nil, err
+	}
+
+	return &SelectPlan{Node: node}, nil
 }
 
 func getColumnIndex(slice []l.Token, columnName string) int {

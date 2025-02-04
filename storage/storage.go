@@ -10,6 +10,3 @@ type Storage interface {
 	Set(key, value string) error
 	ScanKeys() []string
 }
-
-// TODO: Add tuple saving
-// TODO: Add catalog and table management

@@ -9,6 +9,7 @@ import (
 type Catalog interface {
 	CreateTable(name string, schema meta.Table) error
 	GetTable(name string) (*meta.Table, error)
+	// TODO: Add []meta.Table as a key
 	// ListTables() ([]string, error)
 }
 

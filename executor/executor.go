@@ -42,7 +42,14 @@ func (e *Executor) executeCreateTable(createTablePlan p.CreateTablePlan) (Execut
 }
 
 func (e *Executor) executeInsert(insertPlan p.InsertPlan) (ExecutionResult, error) {
+	// Check if already exists
 	key := fmt.Sprintf("%s:%s", insertPlan.Table.Name, insertPlan.Row[insertPlan.Table.PrimaryKey])
+	checkIfExists := e.Storage.Get(key)
+	if len(checkIfExists) > 0 {
+		return nil, fmt.Errorf("UNIQUE constraint failed: %s",
+			insertPlan.Row[insertPlan.Table.PrimaryKey])
+	}
+
 	serializedRow, err := json.Marshal(insertPlan.Row)
 	if err != nil {
 		return nil, err

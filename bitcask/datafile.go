@@ -2,22 +2,28 @@ package bitcask
 
 import (
 	"os"
+	"strconv"
 )
 
 type DataFile struct {
-	id int
-	fd *os.File
+	Id int
+	Fd *os.File
 }
 
-func NewDataFile(id int) (*DataFile, error) {
-	// TODO: Use id + ".db" instead of 1db
-	fd, err := os.Open("1.db")
+// Creates a new DataFile. Please note that it simply opens a file
+// and keeps a reference to the file descriptor. This can be used
+// for both activeFile as well as staleFiles.
+func NewDataFile(dirName string, id int) (*DataFile, error) {
+	idStr := strconv.Itoa(id)
+	path := dirName + "/" + idStr + ".db"
+	fd, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE, 0644)
+
 	if err != nil {
 		return nil, err
 	}
 
 	return &DataFile{
-		id: id,
-		fd: fd,
+		Id: id,
+		Fd: fd,
 	}, nil
 }

@@ -2,12 +2,14 @@ package bitcask
 
 import (
 	// "fmt"
-	// "path/filepath"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
 )
 
+// Based on array of matched file names, returns the last index of currently
+// used file.
 func getLastFileId(matches []string) (int, error) {
 	if len(matches) == 0 {
 		return 1, nil
@@ -24,24 +26,25 @@ func getLastFileId(matches []string) (int, error) {
 	return lastInt, nil
 }
 
-// func glob(dirName string) (int, error) {
-// 	matches, err := filepath.Glob(dirPath + "/*.db")
-// 	fmt.Println(matches)
-// 	if err != nil {
-// 		return -1, err
-// 	}
+func glob(dirName string) ([]string, error) {
+	matches, err := filepath.Glob(dirName + "/*.db")
+	if err != nil {
+		return []string{}, err
+	}
 
-// 	if len(matches) == 0 {
-// 		return 1, nil
-// 	}
+	return matches, nil
+}
 
-// 	sort.Strings(matches)
+func generateNewActiveFileId(dirName string) (int, error) {
+	matches, err := glob(dirName)
+	if err != nil {
+		return -1, err
+	}
 
-// 	lastString := matches[len(matches)-1]
-// 	lastInt, err := strconv.Atoi(lastString)
-// 	if err != nil {
-// 		return -1, err
-// 	}
+	lastId, err := getLastFileId(matches)
+	if err != nil {
+		return -1, err
+	}
 
-// 	return lastInt, nil
-// }
+	return lastId + 1, nil
+}

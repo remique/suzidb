@@ -16,7 +16,7 @@ type DataFile struct {
 func NewDataFile(dirName string, id int) (*DataFile, error) {
 	idStr := strconv.Itoa(id)
 	path := dirName + "/" + idStr + ".db"
-	fd, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE, 0644)
+	fd, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
 
 	if err != nil {
 		return nil, err

@@ -1,22 +1,51 @@
 package bitcask
 
+import (
+	// "bytes"
+	"fmt"
+	// "encoding/json"
+	"strconv"
+	"strings"
+)
+
 type Bitcask struct {
-	KeyDir KeyDir
-	// TODO: Set it to DataFile
-	activeFile *DataFile
-	// TODO: Set it to []DataFile
+	KeyDir     KeyDir
+	ActiveFile *DataFile
 	staleFiles []*DataFile
 }
 
 func NewBitcask() (*Bitcask, error) {
-	af, err := NewDataFile(1)
+	newActiveId, err := generateNewActiveFileId(".")
+	if err != nil {
+		return nil, err
+	}
+
+	rest, err := glob(".")
+	if err != nil {
+		return nil, err
+	}
+
+	af, err := NewDataFile(".", newActiveId)
+	fmt.Println("newActive", newActiveId)
 	if err != nil {
 		return nil, err
 	}
 
 	b := &Bitcask{
 		KeyDir:     KeyDir{},
-		activeFile: af,
+		ActiveFile: af,
+	}
+
+	// Load stalefiles
+	// Move to separate function
+	for _, item := range rest {
+		asInt, err := strconv.Atoi(strings.Trim(item, ".db"))
+		if err != nil {
+			return nil, err
+		}
+
+		sf, err := NewDataFile(".", asInt)
+		b.staleFiles = append(b.staleFiles, sf)
 	}
 
 	// err = b.buildKeydir()
@@ -29,7 +58,7 @@ func NewBitcask() (*Bitcask, error) {
 
 // func (b *Bitcask) buildKeydir() error {
 // 	// Get the size of the file
-// 	stat, err := b.activeFile.fd.Stat()
+// 	stat, err := b.activeFile.Fd.Stat()
 // 	if err != nil {
 // 		return err
 // 	}
@@ -38,7 +67,7 @@ func NewBitcask() (*Bitcask, error) {
 // 	buf := make([]byte, stat.Size())
 
 // 	// Read
-// 	_, err = b.activeFile.fd.Read(buf)
+// 	_, err = b.activeFile.Fd.Read(buf)
 // 	if err != nil {
 // 		return err
 // 	}
@@ -52,7 +81,6 @@ func NewBitcask() (*Bitcask, error) {
 // 			return err
 // 		}
 
-// 		fmt.Println(data)
 // 		// Assign to KeyDirRecord here
 // 		// for key, value := range data {
 // 		// 	keydir[key] = value

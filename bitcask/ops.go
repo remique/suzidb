@@ -1,36 +1,49 @@
 package bitcask
 
-// func (b *Bitcask) set(key, value string) error {
-// 	// Add to activeFile
-// 	fmt.Println("Adding to file")
-// 	serialized, err := json.Marshal(KeyVal{key: value})
-// 	if err != nil {
-// 		return err
-// 	}
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+)
 
-// 	b.activeFile.fd.Write(serialized)
+func (b *Bitcask) Set(key, value string) error {
+	valueBytes := bytes.NewBufferString(value).Bytes()
+	// Generate new header
+	h := NewHeader(key, valueBytes)
 
-// 	// myHeader := &Header{
-// 	// 	Crc:       1,
-// 	// 	Timestamp: 1,
-// 	// 	KeySize:   1,
-// 	// 	ValueSize: 1,
-// 	// }
-// 	// serialized2, err := json.Marshal(myHeader)
-// 	// if err != nil {
-// 	// 	return err
-// 	// }
+	record := DiskRecord{
+		Header: *h,
+		Key:    key,
+		Value:  valueBytes,
+	}
 
-// 	// b.activeFile.fd.Write(serialized2)
+	// Marshal values
+	serialized, err := json.Marshal(record)
+	if err != nil {
+		return err
+	}
 
-// 	// Add to KeyDir
-// 	fmt.Println("Adding to keydir")
-// 	b.KeyDir[key] = KeyDirRecord{
-// 		FileId:    1,
-// 		ValueSize: 1,
-// 		ValuePos:  1,
-// 		Timestamp: 1,
-// 	}
+	fmt.Println(serialized)
+	fmt.Println(record)
 
-// 	return nil
-// }
+	// Add to file
+	n, err := b.ActiveFile.Fd.Write(serialized)
+	fmt.Println("Wrote ", n, "bytes")
+
+	if err != nil {
+		return err
+	}
+	err = b.ActiveFile.Fd.Sync()
+	if err != nil {
+		return err
+	}
+
+	// b.KeyDir[key] = KeyDirRecord{
+	// 	FileId:    1,
+	// 	ValueSize: 1,
+	// 	ValuePos:  1,
+	// 	Timestamp: 1,
+	// }
+
+	return nil
+}

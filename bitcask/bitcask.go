@@ -9,92 +9,79 @@ import (
 )
 
 type Bitcask struct {
+	Options    *Options
 	KeyDir     KeyDir
 	ActiveFile *DataFile
-	staleFiles []*DataFile
+	StaleFiles []*DataFile
 }
 
 func NewBitcask(dir string) (*Bitcask, error) {
-	newActiveId, err := generateNewActiveFileId(dir)
-	if err != nil {
-		return nil, err
-	}
-
-	rest, err := glob(dir)
-	if err != nil {
-		return nil, err
-	}
-
-	af, err := NewDataFile(dir, newActiveId)
-	fmt.Println("newActive", newActiveId)
-	if err != nil {
-		return nil, err
-	}
-
 	b := &Bitcask{
-		KeyDir:     KeyDir{},
-		ActiveFile: af,
+		Options: DefaultOptions(),
 	}
 
-	// Load stalefiles
-	// Move to separate function
-	for _, item := range rest {
-		asInt, err := strconv.Atoi(strings.Trim(item, ".db"))
-		if err != nil {
-			return nil, err
-		}
-
-		sf, err := NewDataFile(".", asInt)
-		b.staleFiles = append(b.staleFiles, sf)
+	// Assing ActiveFile
+	err := b.buildActiveFile()
+	if err != nil {
+		return nil, fmt.Errorf("Error while building activeFile: %s", err.Error())
 	}
 
-	// err = b.buildKeydir()
-	// if err != nil {
-	// 	return nil, err
-	// }
+	// Assing StaleFiles
+	err = b.buildStaleFiles()
+	if err != nil {
+		return nil, fmt.Errorf("Error while building staleFiles: %s", err.Error())
+	}
+
+	// Assing KeyDir
+	err = b.buildKeydir()
+	if err != nil {
+		return nil, err
+	}
 
 	return b, nil
 }
 
-// func (b *Bitcask) buildKeydir() error {
-// 	// Get the size of the file
-// 	stat, err := b.activeFile.Fd.Stat()
-// 	if err != nil {
-// 		return err
-// 	}
+// Opens a new ActiveFile.
+func (b *Bitcask) buildActiveFile() error {
+	newActiveId, err := generateNewActiveFileId(b.Options.dir)
+	if err != nil {
+		return err
+	}
 
-// 	// Build buffer with size of the file
-// 	buf := make([]byte, stat.Size())
+	af, err := NewDataFile(b.Options.dir, newActiveId)
+	if err != nil {
+		return err
+	}
 
-// 	// Read
-// 	_, err = b.activeFile.Fd.Read(buf)
-// 	if err != nil {
-// 		return err
-// 	}
+	b.ActiveFile = af
 
-// 	dec := json.NewDecoder(bytes.NewReader(buf))
+	return nil
+}
 
-// 	for dec.More() {
-// 		var data map[string]string
-// 		err := dec.Decode(&data)
-// 		if err != nil {
-// 			return err
-// 		}
+// Opens all other StaleFiles.
+func (b *Bitcask) buildStaleFiles() error {
+	allFilesGlob, err := glob(b.Options.dir)
+	if err != nil {
+		return err
+	}
 
-// 		// Assign to KeyDirRecord here
-// 		// for key, value := range data {
-// 		// 	keydir[key] = value
-// 		// }
-// 	}
+	for _, file := range allFilesGlob {
+		asInt, err := strconv.Atoi(strings.Trim(file, ".db"))
+		if err != nil {
+			return err
+		}
 
-// 	// FileId    int
-// 	// ValueSize int
-// 	// ValuePos  int
-// 	// Timestamp int
+		sf, err := NewDataFile(".", asInt)
 
-// 	// Poza tym chcielibysmy zapisywac tez header i odczytywac
+		b.StaleFiles = append(b.StaleFiles, sf)
+	}
 
-// 	// fmt.Println(b.KeyDir)
+	return nil
+}
 
-// 	return nil
-// }
+// TODO: Implement this
+// Goes through the files and builds a KeyDir. In the future, it will be
+// generated based on the 'hints file'.
+func (b *Bitcask) buildKeydir() error {
+	return nil
+}

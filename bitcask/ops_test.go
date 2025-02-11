@@ -3,32 +3,19 @@ package bitcask
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"hash/crc32"
-	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSet(t *testing.T) {
-	dir := t.TempDir()
-	b, err := NewBitcask(dir)
+func TestSetSingle(t *testing.T) {
+	b, err := NewBitcask()
 	assert.NoError(t, err)
-
-	ex, err := os.Executable()
-	if err != nil {
-		panic(err)
-	}
-	exPath := filepath.Dir(ex)
-	fmt.Println(exPath)
 
 	// Set key and value
 	err = b.Set("a", "b")
-	if err != nil {
-		t.Fatalf("Error setting: %s", err.Error())
-	}
+	assert.NoError(t, err)
 
 	// Assert that the value is in the active file.
 	stat, err := b.ActiveFile.Fd.Stat()
@@ -36,11 +23,10 @@ func TestSet(t *testing.T) {
 
 	// Build buffer with size of the file
 	buf := make([]byte, stat.Size())
-	fmt.Println(stat.Size())
 
-	// Read
+	// Read into buffer
 	n, err := b.ActiveFile.Fd.ReadAt(buf, 0)
-	// assert.NoError(t, err)
+	assert.NoError(t, err)
 	assert.Greater(t, n, 0)
 
 	// Serialize the data

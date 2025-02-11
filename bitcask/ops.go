@@ -3,11 +3,11 @@ package bitcask
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 )
 
 func (b *Bitcask) Set(key, value string) error {
 	valueBytes := bytes.NewBufferString(value).Bytes()
+
 	// Generate new header
 	h := NewHeader(key, valueBytes)
 
@@ -23,12 +23,8 @@ func (b *Bitcask) Set(key, value string) error {
 		return err
 	}
 
-	fmt.Println(serialized)
-	fmt.Println(record)
-
 	// Add to file
-	n, err := b.ActiveFile.Fd.Write(serialized)
-	fmt.Println("Wrote ", n, "bytes")
+	_, err = b.ActiveFile.Fd.Write(serialized)
 
 	if err != nil {
 		return err
@@ -38,6 +34,7 @@ func (b *Bitcask) Set(key, value string) error {
 		return err
 	}
 
+	// Set Record in keydir
 	// b.KeyDir[key] = KeyDirRecord{
 	// 	FileId:    1,
 	// 	ValueSize: 1,

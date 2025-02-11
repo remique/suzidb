@@ -15,7 +15,7 @@ type Bitcask struct {
 	StaleFiles []*DataFile
 }
 
-func NewBitcask(dir string) (*Bitcask, error) {
+func NewBitcask(opts ...Config) (*Bitcask, error) {
 	b := &Bitcask{
 		Options: DefaultOptions(),
 	}

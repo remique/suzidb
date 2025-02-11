@@ -4,8 +4,8 @@ import (
 	// "bytes"
 	"fmt"
 	// "encoding/json"
-	"strconv"
-	"strings"
+	// "strconv"
+	// "strings"
 )
 
 type Bitcask struct {
@@ -20,10 +20,10 @@ func NewBitcask() (*Bitcask, error) {
 		return nil, err
 	}
 
-	rest, err := glob(".")
-	if err != nil {
-		return nil, err
-	}
+	// rest, err := glob("tmp")
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	af, err := NewDataFile(".", newActiveId)
 	fmt.Println("newActive", newActiveId)
@@ -38,15 +38,15 @@ func NewBitcask() (*Bitcask, error) {
 
 	// Load stalefiles
 	// Move to separate function
-	for _, item := range rest {
-		asInt, err := strconv.Atoi(strings.Trim(item, ".db"))
-		if err != nil {
-			return nil, err
-		}
+	// for _, item := range rest {
+	// 	asInt, err := strconv.Atoi(strings.Trim(item, ".db"))
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
 
-		sf, err := NewDataFile(".", asInt)
-		b.staleFiles = append(b.staleFiles, sf)
-	}
+	// 	sf, err := NewDataFile(".", asInt)
+	// 	b.staleFiles = append(b.staleFiles, sf)
+	// }
 
 	// err = b.buildKeydir()
 	// if err != nil {

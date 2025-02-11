@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"hash/crc32"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,13 +16,22 @@ func TestSet(t *testing.T) {
 	b, err := NewBitcask()
 	assert.NoError(t, err)
 
-	// Set key and value
-	b.Set("a", "b")
+	ex, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+	exPath := filepath.Dir(ex)
+	fmt.Println(exPath)
 
-	_ = b.ActiveFile.Fd.Sync()
+	// Set key and value
+	err = b.Set("a", "b")
+	if err != nil {
+		t.Fatalf("Error setting: %s", err.Error())
+	}
 
 	// Assert that the value is in the active file.
 	stat, err := b.ActiveFile.Fd.Stat()
+	// t.Fatal(b.ActiveFile.Fd.Name())
 	assert.NoError(t, err)
 
 	// Build buffer with size of the file
@@ -41,7 +52,9 @@ func TestSet(t *testing.T) {
 
 	expected := DiskRecord{
 		Header: Header{
-			Crc: expectedCrc,
+			Crc:       expectedCrc,
+			KeySize:   1,
+			ValueSize: 1,
 		},
 		Key:   "a",
 		Value: bytes.NewBufferString("b").Bytes(),
@@ -50,6 +63,6 @@ func TestSet(t *testing.T) {
 	assert.Equal(t, expected.Key, rec.Key)
 	assert.Equal(t, expected.Value, rec.Value)
 	assert.Equal(t, expected.Header.Crc, rec.Header.Crc)
-	// assert.Equal(t, expected.Header.KeySize, rec.Header.KeySize)
-	// assert.Equal(t, expected.Header.ValueSize, rec.Header.ValueSize)
+	assert.Equal(t, expected.Header.KeySize, rec.Header.KeySize)
+	assert.Equal(t, expected.Header.ValueSize, rec.Header.ValueSize)
 }

@@ -1,7 +1,7 @@
 package bitcask
 
 import (
-	// "fmt"
+	"fmt"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -12,7 +12,7 @@ import (
 // used file.
 func getLastFileId(matches []string) (int, error) {
 	if len(matches) == 0 {
-		return 1, nil
+		return 0, nil
 	}
 
 	sort.Strings(matches)
@@ -35,8 +35,9 @@ func glob(dirName string) ([]string, error) {
 	return matches, nil
 }
 
-func generateNewActiveFileId(dirName string) (int, error) {
-	matches, err := glob(dirName)
+func generateNewActiveFileId(dir string) (int, error) {
+	matches, err := glob(dir)
+	fmt.Println("matches", matches)
 	if err != nil {
 		return -1, err
 	}

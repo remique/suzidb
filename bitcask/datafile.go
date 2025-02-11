@@ -1,7 +1,9 @@
 package bitcask
 
 import (
+	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 )
 
@@ -15,7 +17,7 @@ type DataFile struct {
 // for both activeFile as well as staleFiles.
 func NewDataFile(dirName string, id int) (*DataFile, error) {
 	idStr := strconv.Itoa(id)
-	path := dirName + "/" + idStr + ".db"
+	path := filepath.Join(dirName, fmt.Sprintf("%s.db", idStr))
 	fd, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
 
 	if err != nil {

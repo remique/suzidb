@@ -2,10 +2,10 @@ package bitcask
 
 import (
 	// "bytes"
-	"fmt"
 	// "encoding/json"
-	// "strconv"
-	// "strings"
+	"fmt"
+	"strconv"
+	"strings"
 )
 
 type Bitcask struct {
@@ -14,18 +14,18 @@ type Bitcask struct {
 	staleFiles []*DataFile
 }
 
-func NewBitcask() (*Bitcask, error) {
-	newActiveId, err := generateNewActiveFileId(".")
+func NewBitcask(dir string) (*Bitcask, error) {
+	newActiveId, err := generateNewActiveFileId(dir)
 	if err != nil {
 		return nil, err
 	}
 
-	// rest, err := glob("tmp")
-	// if err != nil {
-	// 	return nil, err
-	// }
+	rest, err := glob(dir)
+	if err != nil {
+		return nil, err
+	}
 
-	af, err := NewDataFile(".", newActiveId)
+	af, err := NewDataFile(dir, newActiveId)
 	fmt.Println("newActive", newActiveId)
 	if err != nil {
 		return nil, err
@@ -38,15 +38,15 @@ func NewBitcask() (*Bitcask, error) {
 
 	// Load stalefiles
 	// Move to separate function
-	// for _, item := range rest {
-	// 	asInt, err := strconv.Atoi(strings.Trim(item, ".db"))
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
+	for _, item := range rest {
+		asInt, err := strconv.Atoi(strings.Trim(item, ".db"))
+		if err != nil {
+			return nil, err
+		}
 
-	// 	sf, err := NewDataFile(".", asInt)
-	// 	b.staleFiles = append(b.staleFiles, sf)
-	// }
+		sf, err := NewDataFile(".", asInt)
+		b.staleFiles = append(b.staleFiles, sf)
+	}
 
 	// err = b.buildKeydir()
 	// if err != nil {

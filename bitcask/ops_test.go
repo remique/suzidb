@@ -13,7 +13,8 @@ import (
 )
 
 func TestSet(t *testing.T) {
-	b, err := NewBitcask()
+	dir := t.TempDir()
+	b, err := NewBitcask(dir)
 	assert.NoError(t, err)
 
 	ex, err := os.Executable()
@@ -31,7 +32,6 @@ func TestSet(t *testing.T) {
 
 	// Assert that the value is in the active file.
 	stat, err := b.ActiveFile.Fd.Stat()
-	// t.Fatal(b.ActiveFile.Fd.Name())
 	assert.NoError(t, err)
 
 	// Build buffer with size of the file

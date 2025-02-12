@@ -1,6 +1,7 @@
 package bitcask
 
 import (
+	"encoding/json"
 	"fmt"
 	"path/filepath"
 	"strconv"
@@ -17,6 +18,7 @@ type Bitcask struct {
 func NewBitcask(opts ...Config) (*Bitcask, error) {
 	b := &Bitcask{
 		Options: DefaultOptions(),
+		KeyDir:  KeyDir{},
 	}
 
 	for _, opt := range opts {
@@ -75,7 +77,7 @@ func (b *Bitcask) buildStaleFiles() error {
 			return err
 		}
 
-		sf, err := NewDataFile(".", asInt)
+		sf, err := NewDataFile(b.Options.dir, asInt)
 
 		b.StaleFiles = append(b.StaleFiles, sf)
 	}
@@ -87,5 +89,28 @@ func (b *Bitcask) buildStaleFiles() error {
 // Goes through the files and builds a KeyDir. In the future, it will be
 // generated based on the 'hints file'.
 func (b *Bitcask) buildKeydir() error {
+	for _, file := range b.StaleFiles {
+		decoder := json.NewDecoder(file.Fd)
+
+		for {
+			var dr DiskRecord
+			if err := decoder.Decode(&dr); err != nil {
+				if err.Error() == "EOF" {
+					break
+				}
+
+				return fmt.Errorf("Error while building keydir: %s", err.Error())
+			}
+
+			// Convert DiskRecord into KeyDirRecord
+			kdr := KeyDirRecord{
+				FileId:    file.Id,
+				ValueSize: len(dr.Value),
+				// TODO: ValuePos
+			}
+
+			b.KeyDir[dr.Key] = kdr
+		}
+	}
 	return nil
 }

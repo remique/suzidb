@@ -106,7 +106,9 @@ func (b *Bitcask) buildKeydir() error {
 			kdr := KeyDirRecord{
 				FileId:    file.Id,
 				ValueSize: len(dr.Value),
-				// TODO: ValuePos
+				// TODO: Set ValuePos
+				ValuePos:  0,
+				Timestamp: int(dr.Header.Timestamp),
 			}
 
 			b.KeyDir[dr.Key] = kdr

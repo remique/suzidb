@@ -27,18 +27,47 @@ func TestKeydir(t *testing.T) {
 	df2, err := NewDataFile(tmpDir, 2)
 	assert.NoError(t, err)
 
-	firstWrite, err := df1.Fd.WriteString(`{"Header":{"Crc":3904355907,"Timestamp":1739364247,"KeySize":1,"ValueSize":1},"Key":"b","Value":"Yg=="}{"Header":{"Crc":3904355907,"Timestamp":1739364247,"KeySize":1,"ValueSize":1},"Key":"c","Value":"Yg=="}`)
-	assert.NoError(t, err)
-	assert.Greater(t, firstWrite, 0)
-	secondWrite, err := df2.Fd.WriteString(`{"Header":{"Crc":3904355907,"Timestamp":1739364247,"KeySize":1,"ValueSize":1},"Key":"d","Value":"Yg=="}`)
-	assert.NoError(t, err)
-	assert.Greater(t, secondWrite, 0)
+	recs := []struct {
+		diskRecord DiskRecord
+		dataFile   *DataFile
+	}{
+		{
+			diskRecord: *NewDiskRecord("first", "val1"),
+			dataFile:   df1,
+		},
+		{
+			diskRecord: *NewDiskRecord("second", "val2"),
+			dataFile:   df1,
+		},
+		{
+			diskRecord: *NewDiskRecord("third", "val3"),
+			dataFile:   df2,
+		},
+	}
+
+	// Write Records into appropriate files
+	for _, record := range recs {
+		encoded, err := record.diskRecord.encode()
+		assert.NoError(t, err)
+
+		written, err := record.dataFile.Fd.WriteString(string(encoded))
+		assert.Greater(t, written, 0)
+	}
 
 	b, err := NewBitcask(WithDir(tmpDir))
 	assert.NoError(t, err)
 
-	assert.Equal(t, len(b.KeyDir), 3)
+	// Assert that every Key was saved into KeyDir
+	assert.Equal(t, len(b.KeyDir), len(recs))
 
-	t.Fatal(b.KeyDir)
-
+	// Assert that KeyDirRecords match
+	for _, record := range recs {
+		assert.Equal(t, b.KeyDir[record.diskRecord.Key],
+			KeyDirRecord{
+				FileId:    record.dataFile.Id,
+				ValueSize: len(record.diskRecord.Value),
+				ValuePos:  0,
+				Timestamp: int(record.diskRecord.Header.Timestamp),
+			})
+	}
 }

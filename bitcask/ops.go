@@ -1,21 +1,10 @@
 package bitcask
 
-import (
-	"encoding/json"
-)
-
 func (b *Bitcask) Set(key, value string) error {
-	// Generate new header
-	h := NewHeader(key, []byte(value))
-
-	record := DiskRecord{
-		Header: *h,
-		Key:    key,
-		Value:  []byte(value),
-	}
+	record := NewDiskRecord(key, value)
 
 	// Marshal values
-	serialized, err := json.Marshal(record)
+	serialized, err := record.encode()
 	if err != nil {
 		return err
 	}

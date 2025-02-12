@@ -1,6 +1,7 @@
 package bitcask
 
 import (
+	"fmt"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -17,9 +18,10 @@ func getLastFileId(matches []string) (int, error) {
 	sort.Strings(matches)
 
 	lastString := matches[len(matches)-1]
-	lastInt, err := strconv.Atoi(strings.Trim(lastString, ".db"))
+	fileBase := filepath.Base(lastString)
+	lastInt, err := strconv.Atoi(strings.Trim(fileBase, ".db"))
 	if err != nil {
-		return -1, err
+		return -1, fmt.Errorf("ERR %s", err.Error())
 	}
 
 	return lastInt, nil
@@ -31,7 +33,12 @@ func glob(dirName string) ([]string, error) {
 		return []string{}, err
 	}
 
-	return matches, nil
+	var res []string
+	for _, match := range matches {
+		res = append(res, filepath.Base(match))
+	}
+
+	return res, nil
 }
 
 func generateNewActiveFileId(dir string) (int, error) {

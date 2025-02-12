@@ -1,20 +1,17 @@
 package bitcask
 
 import (
-	"bytes"
 	"encoding/json"
 )
 
 func (b *Bitcask) Set(key, value string) error {
-	valueBytes := bytes.NewBufferString(value).Bytes()
-
 	// Generate new header
-	h := NewHeader(key, valueBytes)
+	h := NewHeader(key, []byte(value))
 
 	record := DiskRecord{
 		Header: *h,
 		Key:    key,
-		Value:  valueBytes,
+		Value:  []byte(value),
 	}
 
 	// Marshal values
@@ -25,10 +22,11 @@ func (b *Bitcask) Set(key, value string) error {
 
 	// Add to file
 	_, err = b.ActiveFile.Fd.Write(serialized)
-
 	if err != nil {
 		return err
 	}
+
+	// Sync file
 	err = b.ActiveFile.Fd.Sync()
 	if err != nil {
 		return err

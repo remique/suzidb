@@ -43,11 +43,12 @@ func TestSetSingle(t *testing.T) {
 			ValueSize: 1,
 		},
 		Key:   "a",
-		Value: bytes.NewBufferString("b").Bytes(),
+		Value: []byte("b"),
 	}
 
 	assert.Equal(t, expected.Key, rec.Key)
 	assert.Equal(t, expected.Value, rec.Value)
+	assert.Equal(t, string(expected.Value), "b")
 	assert.Equal(t, expected.Header.Crc, rec.Header.Crc)
 	assert.Equal(t, expected.Header.KeySize, rec.Header.KeySize)
 	assert.Equal(t, expected.Header.ValueSize, rec.Header.ValueSize)

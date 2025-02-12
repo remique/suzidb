@@ -2,6 +2,7 @@ package bitcask
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -26,37 +27,39 @@ func TestGetLastFileIdInvalidFileName(t *testing.T) {
 }
 
 func TestGlob(t *testing.T) {
-	_, err1 := NewDataFile(".", 1)
-	_, err2 := NewDataFile(".", 2)
-	_, err3 := NewDataFile(".", 3)
+	tmpDir := t.TempDir()
+	_, err1 := NewDataFile(tmpDir, 1)
+	_, err2 := NewDataFile(tmpDir, 2)
+	_, err3 := NewDataFile(tmpDir, 3)
 
 	assert.NoError(t, err1)
 	assert.NoError(t, err2)
 	assert.NoError(t, err3)
 
-	res, err := glob(".")
+	res, err := glob(tmpDir)
 	assert.NoError(t, err)
 	assert.Equal(t, []string{"1.db", "2.db", "3.db"}, res)
 
-	defer os.Remove("./1.db")
-	defer os.Remove("./2.db")
-	defer os.Remove("./3.db")
+	defer os.Remove(filepath.Join(tmpDir, "1.db"))
+	defer os.Remove(filepath.Join(tmpDir, "2.db"))
+	defer os.Remove(filepath.Join(tmpDir, "3.db"))
 }
 
 func TestNewActiveFileId(t *testing.T) {
-	_, err1 := NewDataFile(".", 1)
-	_, err2 := NewDataFile(".", 2)
-	_, err3 := NewDataFile(".", 3)
+	tmpDir := t.TempDir()
+	_, err1 := NewDataFile(tmpDir, 1)
+	_, err2 := NewDataFile(tmpDir, 2)
+	_, err3 := NewDataFile(tmpDir, 3)
 
 	assert.NoError(t, err1)
 	assert.NoError(t, err2)
 	assert.NoError(t, err3)
 
-	res, err := generateNewActiveFileId(".")
+	res, err := generateNewActiveFileId(tmpDir)
 	assert.NoError(t, err)
 	assert.Equal(t, 4, res)
 
-	defer os.Remove("./1.db")
-	defer os.Remove("./2.db")
-	defer os.Remove("./3.db")
+	defer os.Remove(filepath.Join(tmpDir, "1.db"))
+	defer os.Remove(filepath.Join(tmpDir, "2.db"))
+	defer os.Remove(filepath.Join(tmpDir, "3.db"))
 }

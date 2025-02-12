@@ -1,9 +1,8 @@
 package bitcask
 
 import (
-	// "bytes"
-	// "encoding/json"
 	"fmt"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -18,6 +17,10 @@ type Bitcask struct {
 func NewBitcask(opts ...Config) (*Bitcask, error) {
 	b := &Bitcask{
 		Options: DefaultOptions(),
+	}
+
+	for _, opt := range opts {
+		opt(b.Options)
 	}
 
 	// Assing ActiveFile
@@ -66,7 +69,8 @@ func (b *Bitcask) buildStaleFiles() error {
 	}
 
 	for _, file := range allFilesGlob {
-		asInt, err := strconv.Atoi(strings.Trim(file, ".db"))
+		fileBase := filepath.Base(file)
+		asInt, err := strconv.Atoi(strings.Trim(fileBase, ".db"))
 		if err != nil {
 			return err
 		}

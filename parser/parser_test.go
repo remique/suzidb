@@ -306,3 +306,12 @@ func TestParseColumnExpression(t *testing.T) {
 	assert.Equal(t, expected, stmt, "Expected expressions to be the same")
 
 }
+
+func TestParseColumnExpressionNoDot(t *testing.T) {
+	lexer := l.NewLexer("cars 1")
+	parser := NewParser(*lexer)
+
+	_, err := parser.parseColumnExpression()
+	assert.Error(t, err)
+	// assert.Equal(t, nil, stmt, "Expected stmt to be nil")
+}

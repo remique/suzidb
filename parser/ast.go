@@ -58,9 +58,6 @@ type Expression struct {
 	Kind                      ExpressionKind
 }
 
-// TODO: Once we support lexing JOINS we can use the following structure to parse them.
-// Since for now it would break tests I commented it out.
-// // From can be either be a single Table or a Join
 type FromKind uint
 
 const (
@@ -88,6 +85,10 @@ type FromType struct {
 	Kind  FromKind
 }
 
+// TODO: Once we support lexing JOINS we can use the following structure to parse them.
+// Since for now it would break tests I commented it out.
+// From can be either be a single Table or a Join
+//
 // type SelectStatement struct {
 // 	SelectItems *[]l.Token
 // 	From        FromType

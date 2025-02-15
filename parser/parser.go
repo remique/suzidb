@@ -299,24 +299,11 @@ func (p *Parser) parseSelectStatement() (*Statement, error) {
 }
 
 func (p *Parser) parseSelectFrom() (*FromType, error) {
-	// start with from
-
-	// if next token is left or right or inner then its a join
-	// else return normal from
-
-	// then parse 'join'
-
-	// then identifier
-
-	// then 'on'
-
-	// then we need to parse expression (column)
+	// NOTE: In order to properly parse joins we need to implement
+	// parsing the predicate, eg. 'ON x.y = z.y'
 
 	return nil, nil
 }
-
-// SELECT ProductID, ProductName, CategoryName FROM Products
-// 		INNER JOIN Categories ON Products.CategoryID = Categories.CategoryID;
 
 // This obviously needs to be refactored into a proper expression parser.
 // Good idea would be to move expression parsing to another file?

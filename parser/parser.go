@@ -298,6 +298,68 @@ func (p *Parser) parseSelectStatement() (*Statement, error) {
 	return &Statement{SelectStatement: &selectStmt, Kind: SelectKind}, nil
 }
 
+func (p *Parser) parseSelectFrom() (*FromType, error) {
+	// start with from
+
+	// if next token is left or right or inner then its a join
+	// else return normal from
+
+	// then parse 'join'
+
+	// then identifier
+
+	// then 'on'
+
+	// then we need to parse expression (column)
+
+	return nil, nil
+}
+
+// SELECT ProductID, ProductName, CategoryName FROM Products
+// 		INNER JOIN Categories ON Products.CategoryID = Categories.CategoryID;
+
+// This obviously needs to be refactored into a proper expression parser.
+// Good idea would be to move expression parsing to another file?
+func (p *Parser) parseExpression() (*Expression, error) {
+	switch p.currentToken.TokenType {
+	case l.IDENTIFIER:
+		{
+			return p.parseColumnExpression()
+		}
+	default:
+		{
+			return nil, fmt.Errorf("Unsupported expression")
+		}
+	}
+}
+
+func (p *Parser) parseColumnExpression() (*Expression, error) {
+	tableName := p.currentToken.Literal
+
+	if !p.expectPeekToken(l.DOT) {
+		return nil, fmt.Errorf("Expected .")
+	}
+
+	// Skip dot
+	p.nextToken()
+
+	p.nextToken()
+
+	if !p.expectCurrToken(l.IDENTIFIER) {
+		return nil, fmt.Errorf("Expected identifier")
+	}
+
+	columnName := p.currentToken.Literal
+
+	return &Expression{
+		QualifiedColumnExpression: &QualifiedColumnExpression{
+			tableName:  tableName,
+			columnName: columnName,
+		},
+		Kind: QualifiedColumnKind,
+	}, nil
+}
+
 // Method to parse identifiers in Select statement.
 func (p *Parser) parseSelectItems() ([]l.Token, error) {
 	var items []l.Token

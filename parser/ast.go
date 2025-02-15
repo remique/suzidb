@@ -43,9 +43,52 @@ type ExpressionKind uint
 
 const (
 	IdentifierKind ExpressionKind = iota
+	QualifiedColumnKind
 )
 
-type Expression struct {
-	IdentifierExpression *l.Token
-	Kind                 ExpressionKind
+// Tablename.ColumnName
+type QualifiedColumnExpression struct {
+	tableName  string
+	columnName string
 }
+
+type Expression struct {
+	IdentifierExpression      *l.Token
+	QualifiedColumnExpression *QualifiedColumnExpression
+	Kind                      ExpressionKind
+}
+
+// TODO: Once we support lexing JOINS we can use the following structure to parse them.
+// Since for now it would break tests I commented it out.
+// // From can be either be a single Table or a Join
+type FromKind uint
+
+const (
+	UseTableKind FromKind = iota
+	UseJoinKind
+)
+
+type JoinKind uint
+
+const (
+	Left JoinKind = iota
+	Right
+	Inner
+)
+
+type JoinType struct {
+	Left  FromType
+	Right FromType
+	Kind  JoinKind
+}
+
+type FromType struct {
+	Join  *JoinType
+	Table *l.Token
+	Kind  FromKind
+}
+
+// type SelectStatement struct {
+// 	SelectItems *[]l.Token
+// 	From        FromType
+// }

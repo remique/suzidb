@@ -288,3 +288,21 @@ func TestParseInsertStatementWithoutColumnNames(t *testing.T) {
 	}
 	assert.Equal(t, expected.InsertStatement, stmt.InsertStatement, "Expected statements to be the same")
 }
+
+func TestParseColumnExpression(t *testing.T) {
+	lexer := l.NewLexer("cars.carid")
+	parser := NewParser(*lexer)
+
+	expected := &Expression{
+		QualifiedColumnExpression: &QualifiedColumnExpression{
+			tableName:  "cars",
+			columnName: "carid",
+		},
+		Kind: QualifiedColumnKind,
+	}
+
+	stmt, err := parser.parseColumnExpression()
+	assert.NoError(t, err)
+	assert.Equal(t, expected, stmt, "Expected expressions to be the same")
+
+}

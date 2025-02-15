@@ -14,6 +14,7 @@ const (
 	STAR      = "*"
 	SEMICOLON = ";"
 	COMMA     = ","
+	DOT       = "."
 
 	// Keywords
 	SELECT  = "SELECT"
@@ -28,6 +29,13 @@ const (
 	KEY     = "KEY"
 	NOT     = "NOT"
 	NULL    = "NULL"
+
+	// Join Keywords
+	JOIN  = "JOIN"
+	ON    = "ON"
+	LEFT  = "LEFT"
+	RIGHT = "RIGHT"
+	INNER = "INNER"
 
 	// (Keywords) To denote a type in CREATE TABLE statement
 	TEXT_TYPE = "TEXT_TYPE"
@@ -57,6 +65,11 @@ var keywords = map[string]TokenType{
 	"int":     INT_TYPE,
 	"not":     NOT,
 	"null":    NULL,
+	"join":    JOIN,
+	"left":    LEFT,
+	"right":   RIGHT,
+	"inner":   INNER,
+	"on":      ON,
 }
 
 type Token struct {

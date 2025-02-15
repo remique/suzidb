@@ -2,6 +2,8 @@ package lexer
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestReadChar(t *testing.T) {
@@ -164,5 +166,40 @@ func TestNextTokenCreateTableQuery(t *testing.T) {
 		if tok != test.expectedToken {
 			t.Fatalf("Expected token %q, got %q", test.expectedToken, tok)
 		}
+	}
+}
+
+func TestLexerSelectWithJoin(t *testing.T) {
+	lexer := NewLexer(`SELECT ProductID, ProductName, CategoryName FROM Products
+		INNER JOIN Categories ON Products.CategoryID = Categories.CategoryID;`)
+
+	tests := []struct {
+		expectedToken Token
+	}{
+		{expectedToken: NewToken(SELECT, "select")},
+		{expectedToken: NewToken(IDENTIFIER, "productid")},
+		{expectedToken: NewToken(COMMA, ",")},
+		{expectedToken: NewToken(IDENTIFIER, "productname")},
+		{expectedToken: NewToken(COMMA, ",")},
+		{expectedToken: NewToken(IDENTIFIER, "categoryname")},
+		{expectedToken: NewToken(FROM, "from")},
+		{expectedToken: NewToken(IDENTIFIER, "products")},
+		{expectedToken: NewToken(INNER, "inner")},
+		{expectedToken: NewToken(JOIN, "join")},
+		{expectedToken: NewToken(IDENTIFIER, "categories")},
+		{expectedToken: NewToken(ON, "on")},
+		{expectedToken: NewToken(IDENTIFIER, "products")},
+		{expectedToken: NewToken(DOT, ".")},
+		{expectedToken: NewToken(IDENTIFIER, "categoryid")},
+		{expectedToken: NewToken(EQUALS, "=")},
+		{expectedToken: NewToken(IDENTIFIER, "categories")},
+		{expectedToken: NewToken(DOT, ".")},
+		{expectedToken: NewToken(IDENTIFIER, "categoryid")},
+	}
+
+	for _, test := range tests {
+		tok := lexer.NextToken()
+
+		assert.Equal(t, test.expectedToken, tok)
 	}
 }

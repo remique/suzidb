@@ -39,25 +39,6 @@ type InsertStatement struct {
 	Values []l.Token
 }
 
-type ExpressionKind uint
-
-const (
-	IdentifierKind ExpressionKind = iota
-	QualifiedColumnKind
-)
-
-// Tablename.ColumnName
-type QualifiedColumnExpression struct {
-	tableName  string
-	columnName string
-}
-
-type Expression struct {
-	IdentifierExpression      *l.Token
-	QualifiedColumnExpression *QualifiedColumnExpression
-	Kind                      ExpressionKind
-}
-
 type FromKind uint
 
 const (

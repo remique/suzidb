@@ -305,48 +305,6 @@ func (p *Parser) parseSelectFrom() (*FromType, error) {
 	return nil, nil
 }
 
-// This obviously needs to be refactored into a proper expression parser.
-// Good idea would be to move expression parsing to another file?
-func (p *Parser) parseExpression() (*Expression, error) {
-	switch p.currentToken.TokenType {
-	case l.IDENTIFIER:
-		{
-			return p.parseColumnExpression()
-		}
-	default:
-		{
-			return nil, fmt.Errorf("Unsupported expression")
-		}
-	}
-}
-
-func (p *Parser) parseColumnExpression() (*Expression, error) {
-	tableName := p.currentToken.Literal
-
-	if !p.expectPeekToken(l.DOT) {
-		return nil, fmt.Errorf("Expected .")
-	}
-
-	// Skip dot
-	p.nextToken()
-
-	p.nextToken()
-
-	if !p.expectCurrToken(l.IDENTIFIER) {
-		return nil, fmt.Errorf("Expected identifier")
-	}
-
-	columnName := p.currentToken.Literal
-
-	return &Expression{
-		QualifiedColumnExpression: &QualifiedColumnExpression{
-			tableName:  tableName,
-			columnName: columnName,
-		},
-		Kind: QualifiedColumnKind,
-	}, nil
-}
-
 // Method to parse identifiers in Select statement.
 func (p *Parser) parseSelectItems() ([]l.Token, error) {
 	var items []l.Token

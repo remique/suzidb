@@ -21,3 +21,43 @@ func TestParseExpressionLiteral(t *testing.T) {
 
 	assert.Equal(t, expected, res)
 }
+
+func TestParseExpressionIdentifier(t *testing.T) {
+	lexer := l.NewLexer("someident")
+	parser := NewParser(*lexer)
+
+	expected := &Expression{
+		Kind:                 IdentifierKind,
+		IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "someident"},
+	}
+
+	res, err := parser.parseExpressionAtom()
+	assert.NoError(t, err)
+
+	assert.Equal(t, expected, res)
+}
+
+func TestParseExpressionQualifiedColumn(t *testing.T) {
+	lexer := l.NewLexer("sometable.somecol ajsdf")
+	parser := NewParser(*lexer)
+
+	expected := &Expression{
+		Kind: QualifiedColumnKind,
+		QualifiedColumnExpression: &QualifiedColumnExpression{
+			TableName: &Expression{
+				Kind:                 IdentifierKind,
+				IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "sometable"},
+			},
+			ColumnName: &Expression{
+				Kind:                 IdentifierKind,
+				IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "somecol"},
+			},
+		},
+	}
+
+	res, err := parser.parseExpressionColumn()
+
+	assert.NoError(t, err)
+
+	assert.Equal(t, expected, res)
+}

@@ -38,7 +38,7 @@ func TestParseExpressionIdentifier(t *testing.T) {
 }
 
 func TestParseExpressionQualifiedColumn(t *testing.T) {
-	lexer := l.NewLexer("sometable.somecol ajsdf")
+	lexer := l.NewLexer("sometable.somecol")
 	parser := NewParser(*lexer)
 
 	expected := &Expression{

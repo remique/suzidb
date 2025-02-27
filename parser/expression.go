@@ -104,30 +104,3 @@ func (p *Parser) parseExpressionAtom() (*Expression, error) {
 		}
 	}
 }
-
-// func (p *Parser) parseColumnExpression() (*Expression, error) {
-// 	tableName := p.currentToken.Literal
-
-// 	if !p.expectPeekToken(l.DOT) {
-// 		return nil, fmt.Errorf("Expected .")
-// 	}
-
-// 	// Skip dot
-// 	p.nextToken()
-
-// 	p.nextToken()
-
-// 	if !p.expectCurrToken(l.IDENTIFIER) {
-// 		return nil, fmt.Errorf("Expected identifier")
-// 	}
-
-// 	columnName := p.currentToken.Literal
-
-// 	return &Expression{
-// 		QualifiedColumnExpression: &QualifiedColumnExpression{
-// 			tableName:  tableName,
-// 			columnName: columnName,
-// 		},
-// 		Kind: QualifiedColumnKind,
-// 	}, nil
-// }

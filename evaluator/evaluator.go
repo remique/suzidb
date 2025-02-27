@@ -22,7 +22,6 @@ func (ee *ExpressionEvaluator) Evaluate(opts ...EvalOpts) (Value, error) {
 		opt(&evalOpts)
 	}
 
-	// TODO
 	switch ee.Kind {
 	case parser.LiteralKind:
 		{
@@ -39,7 +38,7 @@ func (ee *ExpressionEvaluator) Evaluate(opts ...EvalOpts) (Value, error) {
 	}
 }
 
-func (ee *ExpressionEvaluator) evaluateBinaryExpr(opts ...EvalOpts) (Value, error) {
+func (ee *ExpressionEvaluator) evaluateBinaryExpr() (Value, error) {
 	left, err := NewEval(ee.BinaryExpression.Left).Evaluate()
 	if err != nil {
 		return nil, err

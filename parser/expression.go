@@ -11,6 +11,7 @@ const (
 	LiteralKind ExpressionKind = iota
 	QualifiedColumnKind
 	IdentifierKind
+	BinaryKind
 )
 
 // A column reference, with optionally qualified with tableName.
@@ -20,10 +21,17 @@ type QualifiedColumnExpression struct {
 	ColumnName *Expression
 }
 
+type BinaryExpression struct {
+	Left     *Expression
+	Right    *Expression
+	Operator *lexer.Token
+}
+
 type Expression struct {
 	LiteralExpression         *lexer.Token
 	QualifiedColumnExpression *QualifiedColumnExpression
 	IdentifierExpression      *lexer.Token
+	BinaryExpression          *BinaryExpression
 	Kind                      ExpressionKind
 }
 
@@ -46,6 +54,30 @@ type Expression struct {
 // 	// Start with easier expressions
 // 	return nil, nil
 // }
+
+func (p *Parser) parseBinaryExpression() (*Expression, error) {
+	left, err := p.parseExpressionAtom()
+	if err != nil {
+		return nil, err
+	}
+
+	operator := p.currentToken
+	p.nextToken()
+
+	right, err := p.parseExpressionAtom()
+	if err != nil {
+		return nil, err
+	}
+
+	return &Expression{
+		Kind: BinaryKind,
+		BinaryExpression: &BinaryExpression{
+			Left:     left,
+			Right:    right,
+			Operator: &operator,
+		},
+	}, nil
+}
 
 func (p *Parser) parseExpressionColumn() (*Expression, error) {
 	tableName, err := p.parseExpressionAtom()

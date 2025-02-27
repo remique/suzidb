@@ -61,3 +61,29 @@ func TestParseExpressionQualifiedColumn(t *testing.T) {
 
 	assert.Equal(t, expected, res)
 }
+
+func TestParseExpressionBinaryEqual(t *testing.T) {
+	lexer := l.NewLexer("'some' = 'thing'")
+	parser := NewParser(*lexer)
+
+	expected := &Expression{
+		Kind: BinaryKind,
+		BinaryExpression: &BinaryExpression{
+			Left: &Expression{
+				Kind:              LiteralKind,
+				LiteralExpression: &l.Token{TokenType: l.STRING, Literal: "some"},
+			},
+			Right: &Expression{
+				Kind:              LiteralKind,
+				LiteralExpression: &l.Token{TokenType: l.STRING, Literal: "thing"},
+			},
+			Operator: &l.Token{TokenType: l.EQUALS, Literal: "="},
+		},
+	}
+
+	res, err := parser.parseBinaryExpression()
+
+	assert.NoError(t, err)
+
+	assert.Equal(t, expected, res)
+}

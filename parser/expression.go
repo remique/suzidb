@@ -27,6 +27,7 @@ type BinaryExpression struct {
 	Operator *lexer.Token
 }
 
+// TODO: Refactor this into interfaces.
 type Expression struct {
 	LiteralExpression         *lexer.Token
 	QualifiedColumnExpression *QualifiedColumnExpression
@@ -34,26 +35,6 @@ type Expression struct {
 	BinaryExpression          *BinaryExpression
 	Kind                      ExpressionKind
 }
-
-// func (p *Parser) parseExpression() (*Expression, error) {
-// 	switch p.currentToken.TokenType {
-// 	case lexer.IDENTIFIER:
-// 		{
-// 			if p.peekToken(lexer.DOT) {
-
-// 			}
-
-// 			return p.parseExpressionAtom()
-// 		}
-// 	default:
-// 		{
-// 			return nil, fmt.Errorf("Unsupported expression")
-// 		}
-// 	}
-
-// 	// Start with easier expressions
-// 	return nil, nil
-// }
 
 func (p *Parser) parseBinaryExpression() (*Expression, error) {
 	left, err := p.parseExpressionAtom()

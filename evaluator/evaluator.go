@@ -38,6 +38,7 @@ func (ee *ExpressionEvaluator) Evaluate(opts ...EvalOpts) (Value, error) {
 	}
 }
 
+// We should separate them based on left and right types.
 func (ee *ExpressionEvaluator) evaluateBinaryExpr() (Value, error) {
 	left, err := NewEval(ee.BinaryExpression.Left).Evaluate()
 	if err != nil {

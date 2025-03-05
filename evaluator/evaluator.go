@@ -9,29 +9,35 @@ import (
 )
 
 type ExpressionEvaluator struct {
-	parser.Expression
+	expr parser.Expression
+	opts EvalOptions
 }
 
 func NewEval(expr *parser.Expression) *ExpressionEvaluator {
 	return &ExpressionEvaluator{
-		*expr,
+		expr: *expr,
+		opts: EvalOptions{},
 	}
 }
 
 func (ee *ExpressionEvaluator) Evaluate(opts ...EvalOpts) (Value, error) {
-	evalOpts := EvalOptions{}
 	for _, opt := range opts {
-		opt(&evalOpts)
+		opt(&ee.opts)
 	}
 
-	switch ee.Kind {
+	switch ee.expr.Kind {
 	case parser.LiteralKind:
 		{
-			return &LiteralValue{Value: ee.LiteralExpression.Literal}, nil
+			return &LiteralValue{Value: ee.expr.LiteralExpression.Literal}, nil
 		}
 	case parser.BinaryKind:
 		{
 			return ee.evaluateBinaryExpr()
+		}
+	case parser.QualifiedColumnKind:
+		{
+			// TODO: true?
+			return ee.evaluateQualifiedColumn(ee.opts.row, true)
 		}
 	default:
 		{
@@ -42,17 +48,17 @@ func (ee *ExpressionEvaluator) Evaluate(opts ...EvalOpts) (Value, error) {
 
 // We should separate them based on left and right types.
 func (ee *ExpressionEvaluator) evaluateBinaryExpr() (Value, error) {
-	left, err := NewEval(ee.BinaryExpression.Left).Evaluate()
+	left, err := NewEval(ee.expr.BinaryExpression.Left).Evaluate(WithRow(ee.opts.row))
 	if err != nil {
 		return nil, err
 	}
 
-	right, err := NewEval(ee.BinaryExpression.Right).Evaluate()
+	right, err := NewEval(ee.expr.BinaryExpression.Right).Evaluate(WithRow(ee.opts.row))
 	if err != nil {
 		return nil, err
 	}
 
-	switch ee.BinaryExpression.Operator.Literal {
+	switch ee.expr.BinaryExpression.Operator.Literal {
 	case "=":
 		{
 			res := left.(*LiteralValue).Value == right.(*LiteralValue).Value
@@ -68,13 +74,13 @@ func (ee *ExpressionEvaluator) evaluateBinaryExpr() (Value, error) {
 }
 
 func (ee *ExpressionEvaluator) evaluateQualifiedColumn(row meta.Row, prefix bool) (Value, error) {
-	keyStr := ee.QualifiedColumnExpression.ColumnName.IdentifierExpression.Literal
+	keyStr := ee.expr.QualifiedColumnExpression.ColumnName.IdentifierExpression.Literal
 	if prefix {
 		keyStr = strings.Join(
 			[]string{
-				ee.QualifiedColumnExpression.
+				ee.expr.QualifiedColumnExpression.
 					TableName.IdentifierExpression.Literal,
-					".",
+				".",
 				keyStr,
 			},
 			"")

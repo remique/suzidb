@@ -6,6 +6,7 @@ import (
 
 type Value interface {
 	IsValue()
+	Type() string
 }
 
 type LiteralValue struct {
@@ -23,6 +24,11 @@ type IntValue struct {
 func (lv *LiteralValue) IsValue() {}
 func (bv *BooleanValue) IsValue() {}
 func (iv *IntValue) IsValue()     {}
+
+// Should be an enum
+func (lv *LiteralValue) Type() string { return "literal" }
+func (bv *BooleanValue) Type() string { return "bool" }
+func (iv *IntValue) Type() string     { return "int" }
 
 func toValue(i interface{}) (Value, error) {
 	switch v := i.(type) {

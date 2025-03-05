@@ -100,13 +100,13 @@ func TestEvalQualifiedColumnWithPrefix(t *testing.T) {
 				IdentifierExpression: &lexer.Token{TokenType: lexer.STRING, Literal: "tbl"},
 			},
 			ColumnName: &parser.Expression{
-				Kind:              parser.IdentifierKind,
+				Kind:                 parser.IdentifierKind,
 				IdentifierExpression: &lexer.Token{TokenType: lexer.STRING, Literal: "col"},
 			},
 		},
 	}
 	row := map[string]interface{}{
-		"tbl.col":   1,
+		"tbl.col":  1,
 		"tbl.col2": "hello",
 	}
 
@@ -115,4 +115,81 @@ func TestEvalQualifiedColumnWithPrefix(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, expected, res)
+}
+
+func TestEvalQualifiedColumnWithoutPrefix(t *testing.T) {
+	expr := &parser.Expression{
+		Kind: parser.QualifiedColumnKind,
+		QualifiedColumnExpression: &parser.QualifiedColumnExpression{
+			TableName: &parser.Expression{
+				Kind:                 parser.IdentifierKind,
+				IdentifierExpression: &lexer.Token{TokenType: lexer.STRING, Literal: "tbl"},
+			},
+			ColumnName: &parser.Expression{
+				Kind:                 parser.IdentifierKind,
+				IdentifierExpression: &lexer.Token{TokenType: lexer.STRING, Literal: "col"},
+			},
+		},
+	}
+	row := map[string]interface{}{
+		"col":  1,
+		"col2": "hello",
+	}
+
+	expected := &IntValue{Value: 1}
+	res, err := NewEval(expr).evaluateQualifiedColumn(row, false)
+
+	assert.NoError(t, err)
+	assert.Equal(t, expected, res)
+}
+
+// NOTE: Now that is one huge expression. This is definitely a cue to finish up parsing and simply pass in
+// a string instead of this monstrosity.
+func TestEvalBinaryColumnExpr(t *testing.T) {
+	expr := &parser.Expression{
+		Kind: parser.BinaryKind,
+		BinaryExpression: &parser.BinaryExpression{
+			Left: &parser.Expression{
+				Kind: parser.QualifiedColumnKind,
+				QualifiedColumnExpression: &parser.QualifiedColumnExpression{
+					TableName: &parser.Expression{
+						Kind:                 parser.IdentifierKind,
+						IdentifierExpression: &lexer.Token{TokenType: lexer.STRING, Literal: "tbl1"},
+					},
+					ColumnName: &parser.Expression{
+						Kind:                 parser.IdentifierKind,
+						IdentifierExpression: &lexer.Token{TokenType: lexer.STRING, Literal: "col"},
+					},
+				},
+			},
+			Right: &parser.Expression{
+				Kind: parser.QualifiedColumnKind,
+				QualifiedColumnExpression: &parser.QualifiedColumnExpression{
+					TableName: &parser.Expression{
+						Kind:                 parser.IdentifierKind,
+						IdentifierExpression: &lexer.Token{TokenType: lexer.STRING, Literal: "tbl2"},
+					},
+					ColumnName: &parser.Expression{
+						Kind:                 parser.IdentifierKind,
+						IdentifierExpression: &lexer.Token{TokenType: lexer.STRING, Literal: "col"},
+					},
+				},
+			},
+			Operator: &lexer.Token{TokenType: lexer.EQUALS, Literal: "="},
+		},
+	}
+
+	row := map[string]interface{}{
+		"tbl1.col":  "hello",
+		"tbl1.col2": 1,
+		"tbl2.col":  "hello",
+		"tbl2.col2": 2,
+	}
+
+	expected := &BooleanValue{Value: true}
+	res, err := NewEval(expr).Evaluate(WithRow(row))
+
+	assert.NoError(t, err)
+	assert.Equal(t, expected, res)
+
 }

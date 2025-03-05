@@ -26,6 +26,13 @@ type NodeScan struct {
 	// filter: parser.Expression
 }
 
+// TODO: Add support for building an actual plan.
+type NestedLoopJoin struct {
+	Left      NodeQuery
+	Right     NodeQuery
+	predicate *parser.Expression
+}
+
 // Projection filters out columns that need to be queried.
 type NodeProjection struct {
 	Source  NodeQuery
@@ -33,8 +40,9 @@ type NodeProjection struct {
 }
 
 // NodeQuery marker trait implementations
-func (ns *NodeScan) NodeQuery()       {}
-func (np *NodeProjection) NodeQuery() {}
+func (ns *NodeScan) NodeQuery()        {}
+func (np *NodeProjection) NodeQuery()  {}
+func (nlj *NestedLoopJoin) NodeQuery() {}
 
 type NodeBuilder struct {
 	Catalog storage.Catalog

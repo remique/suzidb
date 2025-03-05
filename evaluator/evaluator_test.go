@@ -9,6 +9,23 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestToValue(t *testing.T) {
+	cases := []struct {
+		og       interface{}
+		expected Value
+	}{
+		{og: 13, expected: &IntValue{Value: 13}},
+		{og: "hello", expected: &LiteralValue{Value: "hello"}},
+		{og: true, expected: &BooleanValue{Value: true}},
+	}
+
+	for _, c := range cases {
+		val, err := toValue(c.og)
+		assert.NoError(t, err)
+		assert.Equal(t, c.expected, val)
+	}
+}
+
 func TestEvaluateLiteral(t *testing.T) {
 	input := &parser.Expression{
 		Kind: parser.LiteralKind,

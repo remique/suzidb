@@ -90,3 +90,29 @@ func TestEvaluateLiteralEqualsFalse(t *testing.T) {
 
 	assert.Equal(t, expected, res)
 }
+
+func TestEvalQualifiedColumnWithPrefix(t *testing.T) {
+	expr := &parser.Expression{
+		Kind: parser.QualifiedColumnKind,
+		QualifiedColumnExpression: &parser.QualifiedColumnExpression{
+			TableName: &parser.Expression{
+				Kind:                 parser.IdentifierKind,
+				IdentifierExpression: &lexer.Token{TokenType: lexer.STRING, Literal: "tbl"},
+			},
+			ColumnName: &parser.Expression{
+				Kind:              parser.IdentifierKind,
+				IdentifierExpression: &lexer.Token{TokenType: lexer.STRING, Literal: "col"},
+			},
+		},
+	}
+	row := map[string]interface{}{
+		"tbl.col":   1,
+		"tbl.col2": "hello",
+	}
+
+	expected := &IntValue{Value: 1}
+	res, err := NewEval(expr).evaluateQualifiedColumn(row, true)
+
+	assert.NoError(t, err)
+	assert.Equal(t, expected, res)
+}

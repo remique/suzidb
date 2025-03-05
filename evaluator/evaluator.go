@@ -2,9 +2,9 @@ package evaluator
 
 import (
 	"fmt"
-	// "strings"
+	"strings"
 
-	// "example.com/suzidb/meta"
+	"example.com/suzidb/meta"
 	"example.com/suzidb/parser"
 )
 
@@ -67,20 +67,28 @@ func (ee *ExpressionEvaluator) evaluateBinaryExpr() (Value, error) {
 	}
 }
 
-// func (ee *ExpressionEvaluator) evaluateQualifiedColumn(row meta.Row, prefix bool) (Value, error) {
-// 	keyStr := ee.QualifiedColumnExpression.ColumnName.IdentifierExpression.Literal
-// 	if prefix {
-// 		keyStr = strings.Join(
-// 			[]string{
-// 				ee.QualifiedColumnExpression.
-// 					TableName.IdentifierExpression.Literal,
-// 				keyStr},
-// 			"")
-// 	}
-// 	get, ok := row[keyStr]
-// 	if !ok {
-// 		return nil, fmt.Errorf("Could not get key")
-// 	}
+func (ee *ExpressionEvaluator) evaluateQualifiedColumn(row meta.Row, prefix bool) (Value, error) {
+	keyStr := ee.QualifiedColumnExpression.ColumnName.IdentifierExpression.Literal
+	if prefix {
+		keyStr = strings.Join(
+			[]string{
+				ee.QualifiedColumnExpression.
+					TableName.IdentifierExpression.Literal,
+					".",
+				keyStr,
+			},
+			"")
+	}
 
-// 	return nil, nil
-// }
+	get, ok := row[keyStr]
+	if !ok {
+		return nil, fmt.Errorf("Could not get key: %s", keyStr)
+	}
+
+	asValue, err := toValue(get)
+	if err != nil {
+		return nil, err
+	}
+
+	return asValue, nil
+}

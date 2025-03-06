@@ -30,7 +30,7 @@ type NodeScan struct {
 type NestedLoopJoin struct {
 	Left      NodeQuery
 	Right     NodeQuery
-	predicate *parser.Expression
+	Predicate *parser.Expression
 }
 
 // Projection filters out columns that need to be queried.

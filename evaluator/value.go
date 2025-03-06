@@ -43,3 +43,10 @@ func toValue(i interface{}) (Value, error) {
 
 	}
 }
+
+func ValueToNative(v Value) (interface{}, error) {
+	switch x := v.(type) {
+	case &BooleanValue:
+		return v.(*BooleanValue).Value, nil
+	}
+}

@@ -10,7 +10,8 @@ import (
 )
 
 func TestSetSingle(t *testing.T) {
-	b, err := NewBitcask()
+	tmpDir := t.TempDir()
+	b, err := NewBitcask(WithDir(tmpDir))
 	assert.NoError(t, err)
 
 	// Set key and value

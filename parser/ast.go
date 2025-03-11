@@ -65,12 +65,3 @@ type FromType struct {
 	Table *l.Token
 	Kind  FromKind
 }
-
-// TODO: Once we support lexing JOINS we can use the following structure to parse them.
-// Since for now it would break tests I commented it out.
-// From can be either be a single Table or a Join
-//
-// type SelectStatement struct {
-// 	SelectItems *[]l.Token
-// 	From        FromType
-// }

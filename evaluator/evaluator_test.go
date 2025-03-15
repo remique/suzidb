@@ -191,5 +191,24 @@ func TestEvalBinaryColumnExpr(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, expected, res)
+}
 
+func TestValueToNative(t *testing.T) {
+	inputs := []struct {
+		val      Value
+		expected interface{}
+	}{
+		{val: &BooleanValue{Value: true}, expected: true},
+		{val: &BooleanValue{Value: false}, expected: false},
+		{val: &IntValue{Value: 5}, expected: 5},
+		{val: &IntValue{Value: -123}, expected: -123},
+		{val: &LiteralValue{Value: "hello world"}, expected: "hello world"},
+	}
+
+	for _, input := range inputs {
+		res, err := ValueToNative(input.val)
+
+		assert.NoError(t, err)
+		assert.Equal(t, input.expected, res)
+	}
 }

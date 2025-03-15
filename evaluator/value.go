@@ -30,6 +30,7 @@ func (lv *LiteralValue) Type() string { return "literal" }
 func (bv *BooleanValue) Type() string { return "bool" }
 func (iv *IntValue) Type() string     { return "int" }
 
+// Converts primitive type to specific Value struct.
 func toValue(i interface{}) (Value, error) {
 	switch v := i.(type) {
 	case int:
@@ -44,9 +45,16 @@ func toValue(i interface{}) (Value, error) {
 	}
 }
 
-func ValueToNative(v Value) (interface{}, error) {
-	switch x := v.(type) {
-	case &BooleanValue:
-		return v.(*BooleanValue).Value, nil
+// Converts evaluated Value to native Golang primitive type.
+func ValueToNative(i interface{}) (interface{}, error) {
+	switch i.(type) {
+	case *BooleanValue:
+		return i.(*BooleanValue).Value, nil
+	case *IntValue:
+		return i.(*IntValue).Value, nil
+	case *LiteralValue:
+		return i.(*LiteralValue).Value, nil
+	default:
+		return nil, fmt.Errorf("Unrecognized Value: %s", i)
 	}
 }

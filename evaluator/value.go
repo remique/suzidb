@@ -39,8 +39,11 @@ func toValue(i interface{}) (Value, error) {
 		return &LiteralValue{Value: v}, nil
 	case bool:
 		return &BooleanValue{Value: v}, nil
+	// NOTE: Temporary fix
+	case float64:
+		return &IntValue{Value: int(v)}, nil
 	default:
-		return nil, fmt.Errorf("Unsupported value")
+		return nil, fmt.Errorf("Unsupported value: %s", v)
 
 	}
 }

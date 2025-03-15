@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"testing"
 
+	"example.com/suzidb/lexer"
 	"example.com/suzidb/meta"
+	"example.com/suzidb/parser"
 	"example.com/suzidb/planner"
 	"example.com/suzidb/storage"
 
@@ -170,6 +172,121 @@ func TestExecuteSelectNodeScan(t *testing.T) {
 
 	// And saving the same plan again should result in an error
 	res, err := e.executeSelect(selectPlan)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, res)
+}
+
+// TODO: Currently does not work for IntType, but we can only use ID as StringType.
+func TestSelectNestedLoopJoin(t *testing.T) {
+	s := storage.NewMemStorage()
+	sm := storage.NewSchemaManager(s)
+	e := NewExecutor(s, sm)
+
+	productTable := meta.Table{
+		Name:       "products",
+		PrimaryKey: "productid",
+		Columns: []meta.Column{
+			{Name: "productid", Type: meta.IntType},
+			{Name: "productname", Type: meta.StringType},
+			{Name: "categoryid", Type: meta.StringType},
+		},
+	}
+
+	categoriesTable := meta.Table{
+		Name:       "categories",
+		PrimaryKey: "categoryid",
+		Columns: []meta.Column{
+			{Name: "categoryid", Type: meta.StringType},
+			{Name: "categoryname", Type: meta.StringType},
+		},
+	}
+
+	nodeInput := planner.NestedLoopJoin{
+		Left: &planner.NodeScan{
+			Table: productTable,
+		},
+		Right: &planner.NodeScan{
+			Table: categoriesTable,
+		},
+		Predicate: &parser.Expression{
+			Kind: parser.BinaryKind,
+			BinaryExpression: &parser.BinaryExpression{
+				Left: &parser.Expression{
+					Kind: parser.QualifiedColumnKind,
+					QualifiedColumnExpression: &parser.QualifiedColumnExpression{
+						TableName: &parser.Expression{
+							Kind:                 parser.IdentifierKind,
+							IdentifierExpression: &lexer.Token{TokenType: lexer.STRING, Literal: "products"},
+						},
+						ColumnName: &parser.Expression{
+							Kind:                 parser.IdentifierKind,
+							IdentifierExpression: &lexer.Token{TokenType: lexer.STRING, Literal: "categoryid"},
+						},
+					},
+				},
+				Right: &parser.Expression{
+					Kind: parser.QualifiedColumnKind,
+					QualifiedColumnExpression: &parser.QualifiedColumnExpression{
+						TableName: &parser.Expression{
+							Kind:                 parser.IdentifierKind,
+							IdentifierExpression: &lexer.Token{TokenType: lexer.STRING, Literal: "categories"},
+						},
+						ColumnName: &parser.Expression{
+							Kind:                 parser.IdentifierKind,
+							IdentifierExpression: &lexer.Token{TokenType: lexer.STRING, Literal: "categoryid"},
+						},
+					},
+				},
+				Operator: &lexer.Token{TokenType: lexer.EQUALS, Literal: "="},
+			},
+		},
+	}
+
+	create1Plan := planner.CreateTablePlan{
+		Table: productTable,
+	}
+
+	create2Plan := planner.CreateTablePlan{
+		Table: categoriesTable,
+	}
+
+	insert1plan := planner.InsertPlan{
+		Table: productTable,
+		Row:   meta.Row{"productid": 1, "productname": "oliveoil", "categoryid": "1"},
+	}
+
+	insert2plan := planner.InsertPlan{
+		Table: categoriesTable,
+		Row:   meta.Row{"categoryid": "1", "categoryname": "oils"},
+	}
+
+	_, err := e.executeCreateTable(create1Plan)
+	assert.NoError(t, err)
+
+	_, err = e.executeCreateTable(create2Plan)
+	assert.NoError(t, err)
+
+	_, err = e.executeInsert(insert1plan)
+	assert.NoError(t, err)
+
+	_, err = e.executeInsert(insert2plan)
+	assert.NoError(t, err)
+
+	expected := &SelectResult{
+		Rows: []meta.Row{
+			{
+				"categories.categoryid":   "1",
+				"categories.categoryname": "oils",
+				"products.categoryid":     "1",
+				// TODO: Fix this float!
+				"products.productid":   float64(1),
+				"products.productname": "oliveoil",
+			},
+		},
+		Columns: []meta.Column{},
+	}
+
+	res, err := e.executeNestedLoopJoin(nodeInput)
 	assert.NoError(t, err)
 	assert.Equal(t, expected, res)
 }

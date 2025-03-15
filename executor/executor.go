@@ -115,6 +115,8 @@ func (e *Executor) executeNestedLoopJoin(node p.NestedLoopJoin) (ExecutionResult
 		return nil, err
 	}
 
+	finalRows := []m.Row{}
+
 	for _, leftItem := range left.(*SelectResult).Rows {
 		for _, rightItem := range right.(*SelectResult).Rows {
 			// merge rows
@@ -130,9 +132,17 @@ func (e *Executor) executeNestedLoopJoin(node p.NestedLoopJoin) (ExecutionResult
 				return nil, err
 			}
 
-			//
+			matchAsNativeVal, err := evaluator.ValueToNative(match)
+			if err != nil {
+				return nil, err
+			}
+
+			if matchAsNativeVal == true {
+				finalRows = append(finalRows, merged)
+			}
 		}
 	}
 
-	return nil, nil
+	// TODO: Get all merged columns in an effective way
+	return &SelectResult{Rows: finalRows, Columns: []m.Column{}}, nil
 }

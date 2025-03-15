@@ -1,1 +1,3 @@
 *.db
+coverage.html
+coverage.out

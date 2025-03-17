@@ -5,6 +5,7 @@ import (
 	m "example.com/suzidb/meta"
 )
 
+// AstKind enum, describes all possible statements supported by the parser.
 type AstKind uint
 
 const (
@@ -13,6 +14,8 @@ const (
 	InsertKind
 )
 
+// Describes a Statement. Currently, it is not implemented in a very Go-like way, and
+// should use interfaces in the future instead.
 type Statement struct {
 	SelectStatement      *SelectStatement
 	CreateTableStatement *CreateTableStatement
@@ -37,31 +40,4 @@ type InsertStatement struct {
 	CustomColumns []l.Token
 
 	Values []l.Token
-}
-
-type FromKind uint
-
-const (
-	UseTableKind FromKind = iota
-	UseJoinKind
-)
-
-type JoinKind uint
-
-const (
-	Left JoinKind = iota
-	Right
-	Inner
-)
-
-type JoinType struct {
-	Left  FromType
-	Right FromType
-	Kind  JoinKind
-}
-
-type FromType struct {
-	Join  *JoinType
-	Table *l.Token
-	Kind  FromKind
 }

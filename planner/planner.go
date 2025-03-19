@@ -126,7 +126,13 @@ func getColumnIndex(slice []l.Token, columnName string) int {
 }
 
 func tokenToColumnType(token l.Token) m.ColumnType {
+	// NOTE(remique): We need to clean the types and define them
+	// more thoroughly.
 	switch token.TokenType {
+	case l.STRING:
+		return m.StringType
+	case l.INT:
+		return m.IntType
 	case l.TEXT_TYPE:
 		return m.StringType
 	case l.INT_TYPE:

@@ -117,7 +117,7 @@ func TestParseStatementWithSelect(t *testing.T) {
 		},
 	}
 
-	stmtRes, err := parser.parseStatement()
+	stmtRes, err := parser.ParseStatement()
 	assert.NoError(t, err)
 	assert.Equal(t, expected, stmtRes)
 }

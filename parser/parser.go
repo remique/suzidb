@@ -46,7 +46,7 @@ func (p *Parser) expectPeekToken(expectKind l.TokenType) bool {
 	return false
 }
 
-func (p *Parser) parseStatement() (*Statement, error) {
+func (p *Parser) ParseStatement() (*Statement, error) {
 	switch p.currentToken.TokenType {
 	case "SELECT":
 		return p.parseSelectStatement()

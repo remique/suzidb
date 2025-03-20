@@ -288,3 +288,17 @@ func TestParseInsertStatementWithoutColumnNames(t *testing.T) {
 	}
 	assert.Equal(t, expected.InsertStatement, stmt.InsertStatement, "Expected statements to be the same")
 }
+
+func TestParseFromTableOnly(t *testing.T) {
+	lexer := l.NewLexer("from mytable")
+	parser := NewParser(*lexer)
+
+	expected := &FromType{
+		Table: &l.Token{Literal: "mytable", TokenType: l.IDENTIFIER},
+		Kind:  UseTableKind,
+	}
+
+	fromRes, err := parser.parseSelectFrom()
+	assert.NoError(t, err)
+	assert.Equal(t, expected, fromRes, "Expected Froms to be the same")
+}

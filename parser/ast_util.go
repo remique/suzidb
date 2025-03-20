@@ -21,9 +21,10 @@ const (
 
 // Used to parse From clause.
 type JoinFrom struct {
-	Left  FromType
-	Right FromType
-	Kind  JoinKind
+	Left      FromType
+	Right     FromType
+	Kind      JoinKind
+	Predicate *Expression
 }
 
 // Used to parse From clause.

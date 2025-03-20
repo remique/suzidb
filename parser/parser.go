@@ -298,11 +298,80 @@ func (p *Parser) parseSelectStatement() (*Statement, error) {
 	return &Statement{SelectStatement: &selectStmt, Kind: SelectKind}, nil
 }
 
+// TODO: This should support multiple joins
 func (p *Parser) parseSelectFrom() (*FromType, error) {
-	// NOTE: In order to properly parse joins we need to implement
-	// parsing the predicate, eg. 'ON x.y = z.y'
+	// SELECT * FROM mytable ...
+	// SELECT * FROM mytable LEFT JOIN anothertable ON
 
-	return nil, nil
+	if !p.expectCurrToken(l.FROM) {
+		return nil, fmt.Errorf("Expected FROM")
+	}
+
+	p.nextToken()
+
+	// Parse table name after FROM
+	if !p.expectCurrToken(l.IDENTIFIER) {
+		return nil, fmt.Errorf("Expected IDENTIFIER")
+	}
+
+	firstTableName := p.currentToken
+
+	p.nextToken()
+
+	// Now we can check if next token is one of the Joins
+	// TODO: Parse JoinKind. Now we just assume LEFT
+	if !p.expectCurrToken(l.LEFT) {
+		return &FromType{
+			Table: &firstTableName,
+			Kind:  UseTableKind,
+		}, nil
+	}
+
+	p.nextToken()
+
+	if !p.expectCurrToken(l.JOIN) {
+		return nil, fmt.Errorf("Expected JOIN keyword")
+	}
+
+	p.nextToken()
+
+	// Now parse another table
+	if !p.expectCurrToken(l.IDENTIFIER) {
+		return nil, fmt.Errorf("Expected IDENTIFIER")
+	}
+
+	secondTableName := p.currentToken
+
+	p.nextToken()
+
+	if !p.expectCurrToken(l.ON) {
+		return nil, fmt.Errorf("Expected ON keyword")
+	}
+
+	p.nextToken()
+
+	// Now we parse expression
+	// TODO: Support ParseExpression()
+	expr, err := p.parseBinaryExpression()
+	if err != nil {
+		return nil, fmt.Errorf("Bad expression")
+	}
+
+	return &FromType{
+		Kind: UseJoinKind,
+		Join: &JoinFrom{
+			Left: FromType{
+				Table: &firstTableName,
+				Kind:  UseTableKind,
+			},
+			Right: FromType{
+				Table: &secondTableName,
+				Kind:  UseTableKind,
+			},
+			Kind:      Left,
+			Predicate: expr,
+		},
+	}, nil
 }
 
 // Method to parse identifiers in Select statement.

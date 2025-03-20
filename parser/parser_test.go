@@ -302,3 +302,61 @@ func TestParseFromTableOnly(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expected, fromRes, "Expected Froms to be the same")
 }
+
+// TODO: This currently fails because we dont have proper parsing of the expressions.
+// func TestParseFromWithSingleJoin(t *testing.T) {
+// 	lexer := l.NewLexer("from mytable left join anothertable on mytable.id = anothertable.id")
+// 	parser := NewParser(*lexer)
+
+// 	expected := &FromType{
+// 		Kind: UseJoinKind,
+// 		Join: &JoinFrom{
+// 			Left: FromType{
+// 				Table: &l.Token{Literal: "mytable", TokenType: l.IDENTIFIER},
+// 				Kind:  UseTableKind,
+// 			},
+// 			Right: FromType{
+// 				Table: &l.Token{Literal: "anothertable", TokenType: l.IDENTIFIER},
+// 				Kind:  UseTableKind,
+// 			},
+// 			Kind: Left,
+
+// 			Predicate: &Expression{
+// 				Kind: BinaryKind,
+// 				BinaryExpression: &BinaryExpression{
+// 					Left: &Expression{
+// 						Kind: QualifiedColumnKind,
+// 						QualifiedColumnExpression: &QualifiedColumnExpression{
+// 							TableName: &Expression{
+// 								Kind:                 IdentifierKind,
+// 								IdentifierExpression: &l.Token{TokenType: l.STRING, Literal: "mytable"},
+// 							},
+// 							ColumnName: &Expression{
+// 								Kind:                 IdentifierKind,
+// 								IdentifierExpression: &l.Token{TokenType: l.STRING, Literal: "id"},
+// 							},
+// 						},
+// 					},
+// 					Right: &Expression{
+// 						Kind: QualifiedColumnKind,
+// 						QualifiedColumnExpression: &QualifiedColumnExpression{
+// 							TableName: &Expression{
+// 								Kind:                 IdentifierKind,
+// 								IdentifierExpression: &l.Token{TokenType: l.STRING, Literal: "anothertable"},
+// 							},
+// 							ColumnName: &Expression{
+// 								Kind:                 IdentifierKind,
+// 								IdentifierExpression: &l.Token{TokenType: l.STRING, Literal: "id"},
+// 							},
+// 						},
+// 					},
+// 					Operator: &l.Token{TokenType: l.EQUALS, Literal: "="},
+// 				},
+// 			},
+// 		},
+// 	}
+
+// 	fromRes, err := parser.parseSelectFrom()
+// 	assert.NoError(t, err)
+// 	assert.Equal(t, expected, fromRes, "Expected Froms to be the same")
+// }

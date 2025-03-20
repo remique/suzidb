@@ -171,7 +171,7 @@ func TestNextTokenCreateTableQuery(t *testing.T) {
 
 func TestLexerSelectWithJoin(t *testing.T) {
 	lexer := NewLexer(`SELECT ProductID, ProductName, CategoryName FROM Products
-		INNER JOIN Categories ON Products.CategoryID = Categories.CategoryID;`)
+		INNER LEFT JOIN Categories ON Products.CategoryID = Categories.CategoryID;`)
 
 	tests := []struct {
 		expectedToken Token
@@ -185,6 +185,7 @@ func TestLexerSelectWithJoin(t *testing.T) {
 		{expectedToken: NewToken(FROM, "from")},
 		{expectedToken: NewToken(IDENTIFIER, "products")},
 		{expectedToken: NewToken(INNER, "inner")},
+		{expectedToken: NewToken(LEFT, "left")},
 		{expectedToken: NewToken(JOIN, "join")},
 		{expectedToken: NewToken(IDENTIFIER, "categories")},
 		{expectedToken: NewToken(ON, "on")},

@@ -200,8 +200,6 @@ func (p *Parser) parseExpressionAtom() (*Expression, error) {
 		{
 			token := p.currentToken
 
-			p.nextToken()
-
 			return &Expression{
 				Kind:              LiteralKind,
 				LiteralExpression: &token,
@@ -210,8 +208,6 @@ func (p *Parser) parseExpressionAtom() (*Expression, error) {
 	case lexer.IDENTIFIER:
 		{
 			token := p.currentToken
-
-			p.nextToken()
 
 			return &Expression{
 				Kind:                 IdentifierKind,

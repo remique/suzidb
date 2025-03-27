@@ -27,6 +27,13 @@ type BinaryExpression struct {
 	Operator *lexer.Token
 }
 
+type Precedence uint
+
+const (
+	LowestPrecedence Precedence = iota
+	DotPrecedence
+)
+
 // TODO: Refactor this into interfaces.
 type Expression struct {
 	LiteralExpression         *lexer.Token
@@ -35,6 +42,83 @@ type Expression struct {
 	BinaryExpression          *BinaryExpression
 	Kind                      ExpressionKind
 }
+
+func tokenToPrecedence(token lexer.Token) Precedence {
+	switch token.TokenType {
+	case lexer.DOT:
+		{
+			return DotPrecedence
+		}
+	default:
+		{
+			return LowestPrecedence
+		}
+	}
+}
+
+func (p *Parser) peekPrecedence() Precedence {
+	return tokenToPrecedence(p.peekToken)
+}
+
+func (p *Parser) currentPrecedence() Precedence {
+	return tokenToPrecedence(p.currentToken)
+}
+
+func (p *Parser) ParseExpression(precedence Precedence) (*Expression, error) {
+	prefix, err := p.parseExpressionAtom()
+	if err != nil {
+		return nil, fmt.Errorf("ParseExpression err: %s", err.Error())
+	}
+
+	for p.peekToken.TokenType != lexer.EOF && precedence < p.peekPrecedence() {
+		if prefix != nil {
+			p.nextToken()
+
+			var infix *Expression
+			switch p.currentToken.TokenType {
+			case lexer.DOT:
+				{
+					res, err := p.parseExpressionColumn2(prefix)
+					if err != nil {
+						return nil, fmt.Errorf("Err: %s", err.Error())
+					}
+					infix = res
+				}
+			default:
+				{
+					infix = nil
+				}
+			}
+
+			prefix = infix
+		}
+	}
+
+	return prefix, nil
+}
+
+func (p *Parser) parseExpressionColumn2(left *Expression) (*Expression, error) {
+	// Skip DOT
+	p.nextToken()
+
+	right, err := p.parseExpressionAtom()
+	if err != nil {
+		return nil, err
+	}
+
+	return &Expression{
+		Kind: QualifiedColumnKind,
+		QualifiedColumnExpression: &QualifiedColumnExpression{
+			TableName:  left,
+			ColumnName: right,
+		},
+	}, nil
+}
+
+// NOTE: This is going to be parseBinaryExpression
+// func (p *Parser) parseInfixExpression(left *Expression) (*Expression, error) {
+// 	currentPrecedence := p.currentPrecedence()
+// }
 
 func (p *Parser) parseBinaryExpression() (*Expression, error) {
 	left, err := p.parseExpressionAtom()
@@ -87,6 +171,29 @@ func (p *Parser) parseExpressionColumn() (*Expression, error) {
 	}, nil
 }
 
+func (p *Parser) parseStringExpression() (*Expression, error) {
+	token := p.currentToken
+
+	p.nextToken()
+
+	return &Expression{
+		Kind:              LiteralKind,
+		LiteralExpression: &token,
+	}, nil
+}
+
+func (p *Parser) parseIdentifierExpression() (*Expression, error) {
+	token := p.currentToken
+
+	p.nextToken()
+
+	return &Expression{
+		Kind:                 IdentifierKind,
+		IdentifierExpression: &token,
+	}, nil
+}
+
+// NOTE: This is deprecated. Rewrite tests
 func (p *Parser) parseExpressionAtom() (*Expression, error) {
 	switch p.currentToken.TokenType {
 	case lexer.STRING:

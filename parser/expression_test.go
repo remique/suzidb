@@ -87,3 +87,42 @@ func TestParseExpressionBinaryEqual(t *testing.T) {
 
 	assert.Equal(t, expected, res)
 }
+
+func TestParseExpressionWithColumns(t *testing.T) {
+	lexer := l.NewLexer("sometable")
+	parser := NewParser(*lexer)
+
+	expected := &Expression{
+		Kind:                 IdentifierKind,
+		IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "sometable"},
+	}
+
+	res, err := parser.ParseExpression(LowestPrecedence)
+	assert.NoError(t, err)
+
+	assert.Equal(t, expected, res)
+}
+
+// func TestParseExpressionWithColumns(t *testing.T) {
+// 	lexer := l.NewLexer("sometable.somecol")
+// 	parser := NewParser(*lexer)
+
+// 	expected := &Expression{
+// 		Kind: QualifiedColumnKind,
+// 		QualifiedColumnExpression: &QualifiedColumnExpression{
+// 			TableName: &Expression{
+// 				Kind:                 IdentifierKind,
+// 				IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "sometable"},
+// 			},
+// 			ColumnName: &Expression{
+// 				Kind:                 IdentifierKind,
+// 				IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "somecol"},
+// 			},
+// 		},
+// 	}
+
+// 	res, err := parser.ParseExpression(LowestPrecedence)
+
+// 	assert.NoError(t, err)
+// 	assert.Equal(t, expected, res)
+// }

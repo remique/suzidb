@@ -30,6 +30,9 @@ type Row map[string]interface{}
 // Utility function that merges left and right row with prefix (tableName). This is used
 // for joins in order to evaluate whether two columns got same values.
 // This is not optimal way of doing it for sure, but will suffice for now.
+//
+// TODO: This should support multiple left joins, so doing it this way
+// is impossible.
 func MergeRows(left, right Row, leftPrefix, rightPrefix string) Row {
 	final := make(map[string]interface{})
 

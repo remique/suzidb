@@ -32,6 +32,7 @@ type Precedence uint
 const (
 	LowestPrecedence Precedence = iota
 	DotPrecedence
+	EqualsPrecedence
 )
 
 // TODO: Refactor this into interfaces.
@@ -48,6 +49,10 @@ func tokenToPrecedence(token lexer.Token) Precedence {
 	case lexer.DOT:
 		{
 			return DotPrecedence
+		}
+	case lexer.EQUALS:
+		{
+			return EqualsPrecedence
 		}
 	default:
 		{
@@ -84,6 +89,14 @@ func (p *Parser) ParseExpression(precedence Precedence) (*Expression, error) {
 					}
 					infix = res
 				}
+			case lexer.EQUALS:
+				{
+					res, err := p.parseExpressionInfixEqual(prefix)
+					if err != nil {
+						return nil, fmt.Errorf("Err: %s", err.Error())
+					}
+					infix = res
+				}
 			default:
 				{
 					infix = nil
@@ -95,6 +108,25 @@ func (p *Parser) ParseExpression(precedence Precedence) (*Expression, error) {
 	}
 
 	return prefix, nil
+
+}
+
+func (p *Parser) parseExpressionInfixEqual(left *Expression) (*Expression, error) {
+	p.nextToken()
+
+	right, err := p.ParseExpression(p.currentPrecedence())
+	if err != nil {
+		return nil, err
+	}
+
+	return &Expression{
+		Kind: BinaryKind,
+		BinaryExpression: &BinaryExpression{
+			Left:     left,
+			Right:    right,
+			Operator: &lexer.Token{TokenType: lexer.EQUALS, Literal: "="},
+		},
+	}, nil
 }
 
 func (p *Parser) parseExpressionColumn2(left *Expression) (*Expression, error) {

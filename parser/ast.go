@@ -28,6 +28,15 @@ type SelectStatement struct {
 	From        *l.Token
 }
 
+type SelectStatement2 struct {
+	SelectItems *[]Expression
+}
+
+// type SelectStatement struct {
+// 	SelectItems *[]l.Token
+// 	From        *FromType
+// }
+
 type CreateTableStatement struct {
 	TableName  string
 	PrimaryKey string

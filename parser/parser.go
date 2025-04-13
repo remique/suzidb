@@ -394,3 +394,41 @@ func (p *Parser) parseSelectItems() ([]l.Token, error) {
 
 	return items, nil
 }
+
+// Parses SELECT clause. It should parse until it finds a parseable expression and
+// returns a list of expressions (which are items that are being selected).
+//
+// In the future it should also support aliases.
+func (p *Parser) parseSelectClause2() (*[]Expression, error) {
+	var items []Expression
+
+	if !p.expectCurrToken(l.SELECT) {
+		return nil, fmt.Errorf("Expected SELECT token")
+	}
+	p.nextToken()
+
+	// Now parse expression until we do not get any more
+	for {
+		expr, err := p.ParseExpression(LowestPrecedence)
+		if err != nil {
+			return nil, err
+		}
+
+		items = append(items, *expr)
+
+		fmt.Println("Currtok", p.currentToken)
+
+		if !p.expectPeekToken(l.COMMA) {
+			break
+		} else {
+			// Skip last parsed expression
+			p.nextToken()
+
+			// Skip comma
+			p.nextToken()
+
+		}
+	}
+
+	return &items, nil
+}

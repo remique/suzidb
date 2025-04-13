@@ -360,3 +360,58 @@ func TestParseFromTableOnly(t *testing.T) {
 // 	assert.NoError(t, err)
 // 	assert.Equal(t, expected, fromRes, "Expected Froms to be the same")
 // }
+
+func TestParseSelectClause2(t *testing.T) {
+	lexer := l.NewLexer("select player.name, team.name, coach.name, withoutcol")
+	parser := NewParser(*lexer)
+
+	expected := &[]Expression{
+		Expression{
+			Kind: QualifiedColumnKind,
+			QualifiedColumnExpression: &QualifiedColumnExpression{
+				TableName: &Expression{
+					Kind:                 IdentifierKind,
+					IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "player"},
+				},
+				ColumnName: &Expression{
+					Kind:                 IdentifierKind,
+					IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "name"},
+				},
+			},
+		},
+		Expression{
+			Kind: QualifiedColumnKind,
+			QualifiedColumnExpression: &QualifiedColumnExpression{
+				TableName: &Expression{
+					Kind:                 IdentifierKind,
+					IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "team"},
+				},
+				ColumnName: &Expression{
+					Kind:                 IdentifierKind,
+					IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "name"},
+				},
+			},
+		},
+		Expression{
+			Kind: QualifiedColumnKind,
+			QualifiedColumnExpression: &QualifiedColumnExpression{
+				TableName: &Expression{
+					Kind:                 IdentifierKind,
+					IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "coach"},
+				},
+				ColumnName: &Expression{
+					Kind:                 IdentifierKind,
+					IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "name"},
+				},
+			},
+		},
+		Expression{
+			Kind:                 IdentifierKind,
+			IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "withoutcol"},
+		},
+	}
+
+	fromRes, err := parser.parseSelectClause2()
+	assert.NoError(t, err)
+	assert.Equal(t, expected, fromRes)
+}

@@ -147,11 +147,6 @@ func (p *Parser) parseExpressionColumn2(left *Expression) (*Expression, error) {
 	}, nil
 }
 
-// NOTE: This is going to be parseBinaryExpression
-// func (p *Parser) parseInfixExpression(left *Expression) (*Expression, error) {
-// 	currentPrecedence := p.currentPrecedence()
-// }
-
 func (p *Parser) parseBinaryExpression() (*Expression, error) {
 	left, err := p.parseExpressionAtom()
 	if err != nil {
@@ -203,6 +198,7 @@ func (p *Parser) parseExpressionColumn() (*Expression, error) {
 	}, nil
 }
 
+// NOTE: This is deprecated. Rewrite tests
 func (p *Parser) parseStringExpression() (*Expression, error) {
 	token := p.currentToken
 
@@ -214,6 +210,7 @@ func (p *Parser) parseStringExpression() (*Expression, error) {
 	}, nil
 }
 
+// NOTE: This is deprecated. Rewrite tests
 func (p *Parser) parseIdentifierExpression() (*Expression, error) {
 	token := p.currentToken
 

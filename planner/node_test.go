@@ -54,6 +54,7 @@ func TestBuildNodeScan(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expected, res)
 }
+
 func TestBuildJoin(t *testing.T) {
 	mockCatalog := &mocks.MockCatalog{
 		GetTableFunc: func(name string) (*meta.Table, error) {

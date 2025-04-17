@@ -14,8 +14,8 @@ const (
 	InsertKind
 )
 
-// Describes a Statement. Currently, it is not implemented in a very Go-like way, and
-// should use interfaces in the future instead.
+// Describes a Statement. Currently, it is not implemented in a very Go-like way,
+// and should use interfaces in the future instead.
 type Statement struct {
 	SelectStatement      *SelectStatement
 	CreateTableStatement *CreateTableStatement
@@ -23,36 +23,24 @@ type Statement struct {
 	Kind                 AstKind
 }
 
+// Represents SelectStatement option of Statement. SelectItems is a list of expressions,
+// because it supports QualifiedColumn expressions (eg. 'mytable.col') as well as simple Literal
+// expressions (eg. 'mytable').
+//
+// From describes whether select should use single table or join multiple tables.
 type SelectStatement struct {
 	SelectItems *[]Expression
 	From        FromInterface
 }
 
-type TableFrom struct {
-	TableName string
-}
-
-type FromInterface interface {
-	isFrom()
-}
-
-type JoinFrom struct {
-	Left  FromInterface
-	Right FromInterface
-
-	JoinKind  JoinKind
-	Predicate *Expression
-}
-
-func (tf *TableFrom) isFrom() {}
-func (jf *JoinFrom) isFrom()  {}
-
+// Represents CreateTable statement. This should be refactored pretty soon.
 type CreateTableStatement struct {
 	TableName  string
 	PrimaryKey string
 	Columns    *[]m.Column
 }
 
+// Represents Insert statement. This should be refactored as well.
 type InsertStatement struct {
 	TableName string
 	// If specific order is specified, push it to this array

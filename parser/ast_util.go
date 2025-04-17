@@ -7,6 +7,9 @@ const (
 	UseJoinKind
 )
 
+// Represents currently "supported" joins. As of now, because of
+// rapid development state of this database, only Left joins are
+// truly supported and possible to query.
 type JoinKind uint
 
 const (
@@ -15,6 +18,7 @@ const (
 	Inner
 )
 
+// Represents a single Table query.
 type TableFrom struct {
 	TableName string
 }
@@ -23,6 +27,9 @@ type FromInterface interface {
 	isFrom()
 }
 
+// Represents From when encountering Joins. It uses left-associative
+// tree to parse multiple joins. Inside Left and Right you can have
+// either another JoinFrom or simply TableFrom.
 type JoinFrom struct {
 	Left  FromInterface
 	Right FromInterface

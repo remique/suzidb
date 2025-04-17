@@ -52,34 +52,42 @@ func NewNodeBuilder(c storage.Catalog) *NodeBuilder {
 	return &NodeBuilder{Catalog: c}
 }
 
-func (nb *NodeBuilder) BuildNode(statement parser.Statement) (NodeQuery, error) {
-	switch statement.Kind {
-	case parser.SelectKind:
+func (nb *NodeBuilder) BuildNode(from parser.FromInterface) (NodeQuery, error) {
+	switch f := from.(type) {
+	case *parser.TableFrom:
 		{
-			// if isAsteriskOnly(statement.SelectStatement.SelectItems) {
-			// 	return nb.buildNodeScan(statement)
-			// }
+			return nb.buildNodeScan(f)
+		}
+	case *parser.JoinFrom:
+		{
+			left, err := nb.BuildNode(f.Left)
+			if err != nil {
+				return nil, err
+			}
 
-			// TODO: Needs a rewrite
-
-			return nil, fmt.Errorf("Unsupported query")
+			right, err := nb.BuildNode(f.Right)
+			if err != nil {
+				return nil, err
+			}
+			return &NestedLoopJoin{
+				Left:      left,
+				Right:     right,
+				Predicate: f.Predicate,
+			}, nil
 		}
 	default:
-		return nil, fmt.Errorf("Expected SelectKind")
+		return nil, fmt.Errorf("Unsupported query")
 	}
 }
 
-func (nb *NodeBuilder) buildNodeScan(statement parser.Statement) (NodeQuery, error) {
-	// TODO: Needs a rewrite
-
+func (nb *NodeBuilder) buildNodeScan(tableFrom *parser.TableFrom) (NodeQuery, error) {
 	// Get table
-	// table, err := nb.Catalog.GetTable(statement.SelectStatement.From.Literal)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	table, err := nb.Catalog.GetTable(tableFrom.TableName)
+	if err != nil {
+		return nil, err
+	}
 
-	// return &NodeScan{Table: *table}, nil
-	return nil, nil
+	return &NodeScan{Table: *table}, nil
 }
 
 // func (nb *NodeBuilder) buildNodeProjection(statement parser.Statement) (NodeQuery, error) {

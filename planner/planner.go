@@ -105,14 +105,15 @@ func (pl *Planner) buildInsert(stmt p.Statement) (Plan, error) {
 }
 
 func (pl *Planner) buildSelect(stmt p.Statement) (Plan, error) {
-	nb := NewNodeBuilder(pl.Catalog)
+	// nb := NewNodeBuilder(pl.Catalog)
 
-	node, err := nb.BuildNode(stmt)
-	if err != nil {
-		return nil, err
-	}
+	// node, err := nb.BuildNode(stmt)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	return &SelectPlan{Node: node}, nil
+	// return &SelectPlan{Node: node}, nil
+	return nil, nil
 }
 
 func getColumnIndex(slice []l.Token, columnName string) int {

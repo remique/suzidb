@@ -23,7 +23,7 @@ type TableFrom struct {
 	TableName string
 }
 
-type FromInterface interface {
+type From interface {
 	isFrom()
 }
 
@@ -31,8 +31,8 @@ type FromInterface interface {
 // tree to parse multiple joins. Inside Left and Right you can have
 // either another JoinFrom or simply TableFrom.
 type JoinFrom struct {
-	Left  FromInterface
-	Right FromInterface
+	Left  From
+	Right From
 
 	JoinKind  JoinKind
 	Predicate *Expression

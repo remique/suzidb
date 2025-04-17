@@ -339,8 +339,8 @@ func (p *Parser) parseSelectClause() (*[]Expression, error) {
 }
 
 // Parses FROM clause with single table and multiple join support.
-func (p *Parser) parseFromClause() (FromInterface, error) {
-	var left FromInterface
+func (p *Parser) parseFromClause() (From, error) {
+	var left From
 
 	if !p.expectCurrToken(l.FROM) {
 		return nil, fmt.Errorf("Expected FROM token")

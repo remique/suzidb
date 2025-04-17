@@ -30,7 +30,7 @@ type Statement struct {
 // From describes whether select should use single table or join multiple tables.
 type SelectStatement struct {
 	SelectItems *[]Expression
-	From        FromInterface
+	From        From
 }
 
 // Represents CreateTable statement. This should be refactored pretty soon.

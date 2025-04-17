@@ -46,6 +46,17 @@ func (p *Parser) expectPeekToken(expectKind l.TokenType) bool {
 	return false
 }
 
+func (p *Parser) currTokenIsJoin() bool {
+	switch p.currentToken.TokenType {
+	case l.LEFT:
+		return true
+	case l.INNER:
+		return true
+	default:
+		return false
+	}
+}
+
 func (p *Parser) ParseStatement() (*Statement, error) {
 	switch p.currentToken.TokenType {
 	case "SELECT":
@@ -416,8 +427,6 @@ func (p *Parser) parseSelectClause2() (*[]Expression, error) {
 
 		items = append(items, *expr)
 
-		fmt.Println("Currtok", p.currentToken)
-
 		if !p.expectPeekToken(l.COMMA) {
 			break
 		} else {
@@ -432,3 +441,62 @@ func (p *Parser) parseSelectClause2() (*[]Expression, error) {
 
 	return &items, nil
 }
+
+// select * from costam left join ab on costam.x = ab.y right join cd on costam.z = cd.l
+func (p *Parser) parseFromClause2() (FromInterface, error) {
+	var left FromInterface
+
+	if !p.expectCurrToken(l.FROM) {
+		return nil, fmt.Errorf("Expected FROM token")
+	}
+	p.nextToken()
+
+	// First we need a table that we can parse.
+	if !p.expectCurrToken(l.IDENTIFIER) {
+		return nil, fmt.Errorf("Expected IDENTIFIER (table name)")
+	}
+
+	left = &TableFrom2{TableName: p.currentToken.Literal}
+
+	p.nextToken()
+
+	for p.currTokenIsJoin() {
+		// Skip "LEFT" or "INNER", etc.
+		p.nextToken()
+		// Skip "JOIN"
+		p.nextToken()
+
+		// Parse tableName
+		if !p.expectCurrToken(l.IDENTIFIER) {
+			return nil, fmt.Errorf("Expected IDENTIFIER (table name)")
+		}
+
+		right := TableFrom2{TableName: p.currentToken.Literal}
+
+		//  Skip tableName
+		p.nextToken()
+
+		// Skip "ON"
+		p.nextToken()
+
+		expr, err := p.ParseExpression(LowestPrecedence)
+		if err != nil {
+			return nil, err
+		}
+
+		left = &JoinFrom2{
+			Left:      left,
+			Right:     &right,
+			JoinKind:  Left,
+			Predicate: expr,
+		}
+
+		p.nextToken()
+	}
+
+	return left, nil
+}
+
+// func (p *Parser) parseFromTableClause() (From2, error) {
+// 	//
+// }

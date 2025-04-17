@@ -32,10 +32,24 @@ type SelectStatement2 struct {
 	SelectItems *[]Expression
 }
 
-// type SelectStatement struct {
-// 	SelectItems *[]l.Token
-// 	From        *FromType
-// }
+type TableFrom2 struct {
+	TableName string
+}
+
+type FromInterface interface {
+	isFrom()
+}
+
+type JoinFrom2 struct {
+	Left  FromInterface
+	Right FromInterface
+
+	JoinKind  JoinKind
+	Predicate *Expression
+}
+
+func (tf *TableFrom2) isFrom() {}
+func (jf *JoinFrom2) isFrom()  {}
 
 type CreateTableStatement struct {
 	TableName  string

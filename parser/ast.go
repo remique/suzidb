@@ -18,23 +18,17 @@ const (
 // should use interfaces in the future instead.
 type Statement struct {
 	SelectStatement      *SelectStatement
-	SelectStatement2     *SelectStatement2
 	CreateTableStatement *CreateTableStatement
 	InsertStatement      *InsertStatement
 	Kind                 AstKind
 }
 
 type SelectStatement struct {
-	SelectItems *[]l.Token
-	From        *l.Token
-}
-
-type SelectStatement2 struct {
 	SelectItems *[]Expression
 	From        FromInterface
 }
 
-type TableFrom2 struct {
+type TableFrom struct {
 	TableName string
 }
 
@@ -42,7 +36,7 @@ type FromInterface interface {
 	isFrom()
 }
 
-type JoinFrom2 struct {
+type JoinFrom struct {
 	Left  FromInterface
 	Right FromInterface
 
@@ -50,8 +44,8 @@ type JoinFrom2 struct {
 	Predicate *Expression
 }
 
-func (tf *TableFrom2) isFrom() {}
-func (jf *JoinFrom2) isFrom()  {}
+func (tf *TableFrom) isFrom() {}
+func (jf *JoinFrom) isFrom()  {}
 
 type CreateTableStatement struct {
 	TableName  string

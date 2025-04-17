@@ -200,43 +200,43 @@ func TestBuildInsertPlanCustomColsWithNullable(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestBuildSelectNodeScan(t *testing.T) {
-	mockCatalog := &mocks.MockCatalog{
-		GetTableFunc: func(name string) (*m.Table, error) {
-			return &m.Table{
-				Name:       "mytable",
-				PrimaryKey: "id",
-				Columns: []m.Column{
-					{Name: "id", Type: m.IntType, Nullable: false},
-					{Name: "name", Type: m.StringType, Nullable: true},
-				},
-			}, nil
-		},
-	}
-	planner := NewPlanner(mockCatalog)
+// func TestBuildSelectNodeScan(t *testing.T) {
+// 	mockCatalog := &mocks.MockCatalog{
+// 		GetTableFunc: func(name string) (*m.Table, error) {
+// 			return &m.Table{
+// 				Name:       "mytable",
+// 				PrimaryKey: "id",
+// 				Columns: []m.Column{
+// 					{Name: "id", Type: m.IntType, Nullable: false},
+// 					{Name: "name", Type: m.StringType, Nullable: true},
+// 				},
+// 			}, nil
+// 		},
+// 	}
+// 	planner := NewPlanner(mockCatalog)
 
-	stmt := p.Statement{
-		Kind: p.SelectKind,
-		SelectStatement: &p.SelectStatement{
-			SelectItems: &[]l.Token{{TokenType: l.STAR, Literal: "*"}},
-			From:        &l.Token{TokenType: l.IDENTIFIER, Literal: "mytable"},
-		},
-	}
+// 	stmt := p.Statement{
+// 		Kind: p.SelectKind,
+// 		SelectStatement: &p.SelectStatement{
+// 			SelectItems: &[]l.Token{{TokenType: l.STAR, Literal: "*"}},
+// 			From:        &l.Token{TokenType: l.IDENTIFIER, Literal: "mytable"},
+// 		},
+// 	}
 
-	expected := SelectPlan{
-		Node: &NodeScan{
-			Table: m.Table{
-				Name:       "mytable",
-				PrimaryKey: "id",
-				Columns: []m.Column{
-					{Name: "id", Type: m.IntType, Nullable: false},
-					{Name: "name", Type: m.StringType, Nullable: true},
-				},
-			},
-		},
-	}
+// 	expected := SelectPlan{
+// 		Node: &NodeScan{
+// 			Table: m.Table{
+// 				Name:       "mytable",
+// 				PrimaryKey: "id",
+// 				Columns: []m.Column{
+// 					{Name: "id", Type: m.IntType, Nullable: false},
+// 					{Name: "name", Type: m.StringType, Nullable: true},
+// 				},
+// 			},
+// 		},
+// 	}
 
-	plan, err := planner.buildSelect(stmt)
-	assert.Equal(t, plan, &expected, "Expected Plan should be the same")
-	assert.NoError(t, err)
-}
+// 	plan, err := planner.buildSelect(stmt)
+// 	assert.Equal(t, plan, &expected, "Expected Plan should be the same")
+// 	assert.NoError(t, err)
+// }

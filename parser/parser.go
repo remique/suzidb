@@ -282,80 +282,31 @@ func (p *Parser) parseCreateTableColumns() (columns *[]m.Column, primaryKey *str
 }
 
 func (p *Parser) parseSelectStatement() (*Statement, error) {
-	// Skip 'SELECT' and then parseSelectItems
-	p.nextToken()
-
-	selectItems, err := p.parseSelectItems()
-	if err != nil {
-		return nil, err
-	}
-
-	// parse 'FROM'
-	p.nextToken()
-	if !p.expectCurrToken(l.FROM) {
-		return nil, fmt.Errorf("Expected FROM")
-	}
-
-	p.nextToken()
-	if !p.expectCurrToken(l.IDENTIFIER) {
-		return nil, fmt.Errorf("Expected IDENTIFIER")
-	}
-
-	selectStmt := SelectStatement{
-		SelectItems: &selectItems,
-		From:        &p.currentToken,
-	}
-
-	return &Statement{SelectStatement: &selectStmt, Kind: SelectKind}, nil
-}
-
-func (p *Parser) parseSelectStatement2() (*Statement, error) {
-	exprList, err := p.parseSelectClause2()
+	exprList, err := p.parseSelectClause()
 	if err != nil {
 		return nil, fmt.Errorf("Could not parse select clause")
 	}
 
 	p.nextToken()
 
-	from, err := p.parseFromClause2()
+	from, err := p.parseFromClause()
 	if err != nil {
 		return nil, fmt.Errorf("Could not parse from clause")
 	}
 
 	return &Statement{
-		SelectStatement2: &SelectStatement2{
+		SelectStatement: &SelectStatement{
 			SelectItems: exprList,
 			From:        from,
 		},
 	}, nil
 }
 
-// Method to parse identifiers in Select statement.
-func (p *Parser) parseSelectItems() ([]l.Token, error) {
-	var items []l.Token
-
-	// Parse first item
-	items = append(items, p.currentToken)
-
-	for p.expectPeekToken(l.COMMA) {
-		p.nextToken()
-
-		p.nextToken()
-		items = append(items, p.currentToken)
-	}
-
-	if !(p.expectPeekToken(l.SEMICOLON) || p.expectPeekToken(l.FROM)) {
-		return items, fmt.Errorf("Expected either SEMICOLON or FROM")
-	}
-
-	return items, nil
-}
-
 // Parses SELECT clause. It should parse until it finds a parseable expression and
 // returns a list of expressions (which are items that are being selected).
 //
 // In the future it should also support aliases.
-func (p *Parser) parseSelectClause2() (*[]Expression, error) {
+func (p *Parser) parseSelectClause() (*[]Expression, error) {
 	var items []Expression
 
 	if !p.expectCurrToken(l.SELECT) {
@@ -387,8 +338,8 @@ func (p *Parser) parseSelectClause2() (*[]Expression, error) {
 	return &items, nil
 }
 
-// select * from costam left join ab on costam.x = ab.y right join cd on costam.z = cd.l
-func (p *Parser) parseFromClause2() (FromInterface, error) {
+// Parses FROM clause with single table and multiple join support.
+func (p *Parser) parseFromClause() (FromInterface, error) {
 	var left FromInterface
 
 	if !p.expectCurrToken(l.FROM) {
@@ -401,7 +352,7 @@ func (p *Parser) parseFromClause2() (FromInterface, error) {
 		return nil, fmt.Errorf("Expected IDENTIFIER (table name)")
 	}
 
-	left = &TableFrom2{TableName: p.currentToken.Literal}
+	left = &TableFrom{TableName: p.currentToken.Literal}
 
 	p.nextToken()
 
@@ -416,7 +367,7 @@ func (p *Parser) parseFromClause2() (FromInterface, error) {
 			return nil, fmt.Errorf("Expected IDENTIFIER (table name)")
 		}
 
-		right := TableFrom2{TableName: p.currentToken.Literal}
+		right := TableFrom{TableName: p.currentToken.Literal}
 
 		//  Skip tableName
 		p.nextToken()
@@ -429,7 +380,7 @@ func (p *Parser) parseFromClause2() (FromInterface, error) {
 			return nil, err
 		}
 
-		left = &JoinFrom2{
+		left = &JoinFrom{
 			Left:      left,
 			Right:     &right,
 			JoinKind:  Left,

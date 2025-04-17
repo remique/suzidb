@@ -56,9 +56,11 @@ func (nb *NodeBuilder) BuildNode(statement parser.Statement) (NodeQuery, error) 
 	switch statement.Kind {
 	case parser.SelectKind:
 		{
-			if isAsteriskOnly(statement.SelectStatement.SelectItems) {
-				return nb.buildNodeScan(statement)
-			}
+			// if isAsteriskOnly(statement.SelectStatement.SelectItems) {
+			// 	return nb.buildNodeScan(statement)
+			// }
+
+			// TODO: Needs a rewrite
 
 			return nil, fmt.Errorf("Unsupported query")
 		}
@@ -68,13 +70,16 @@ func (nb *NodeBuilder) BuildNode(statement parser.Statement) (NodeQuery, error) 
 }
 
 func (nb *NodeBuilder) buildNodeScan(statement parser.Statement) (NodeQuery, error) {
-	// Get table
-	table, err := nb.Catalog.GetTable(statement.SelectStatement.From.Literal)
-	if err != nil {
-		return nil, err
-	}
+	// TODO: Needs a rewrite
 
-	return &NodeScan{Table: *table}, nil
+	// Get table
+	// table, err := nb.Catalog.GetTable(statement.SelectStatement.From.Literal)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// return &NodeScan{Table: *table}, nil
+	return nil, nil
 }
 
 // func (nb *NodeBuilder) buildNodeProjection(statement parser.Statement) (NodeQuery, error) {

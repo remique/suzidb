@@ -8,85 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestParseSelectItemsSemicolon(t *testing.T) {
-	lexer := l.NewLexer("a, b, c;")
-	parser := NewParser(*lexer)
-
-	tests := struct {
-		expectedItems []l.Token
-	}{
-		expectedItems: []l.Token{
-			l.NewToken(l.IDENTIFIER, "a"),
-			l.NewToken(l.IDENTIFIER, "b"),
-			l.NewToken(l.IDENTIFIER, "c"),
-		},
-	}
-
-	items, err := parser.parseSelectItems()
-	assert.NoError(t, err)
-
-	for i := range tests.expectedItems {
-		assert.Equal(t, tests.expectedItems[i], items[i])
-	}
-}
-
-func TestParseSelectItemsWhere(t *testing.T) {
-	lexer := l.NewLexer("a, b, c frOm")
-	parser := NewParser(*lexer)
-
-	tests := struct {
-		expectedItems []l.Token
-	}{
-		expectedItems: []l.Token{
-			l.NewToken(l.IDENTIFIER, "a"),
-			l.NewToken(l.IDENTIFIER, "b"),
-			l.NewToken(l.IDENTIFIER, "c"),
-		},
-	}
-
-	items, err := parser.parseSelectItems()
-	assert.NoError(t, err)
-
-	for i := range tests.expectedItems {
-		assert.Equal(t, tests.expectedItems[i], items[i])
-	}
-}
-
-func TestParseSelectItemsExpectedSemicolonOrWhere(t *testing.T) {
-	lexer := l.NewLexer("a,c")
-	parser := NewParser(*lexer)
-
-	// NOTE: This should probably return nil?
-	_, err := parser.parseSelectItems()
-	assert.Error(t, err)
-}
-
-func TestParseSelectItemsExpectedComma(t *testing.T) {
-	lexer := l.NewLexer("a,")
-	parser := NewParser(*lexer)
-
-	_, err := parser.parseSelectItems()
-	assert.Error(t, err)
-}
-
-func TestParseSelectStatement(t *testing.T) {
-	lexer := l.NewLexer("select * from myTable;")
-	parser := NewParser(*lexer)
-
-	expected := Statement{
-		Kind: SelectKind,
-		SelectStatement: &SelectStatement{
-			SelectItems: &[]l.Token{
-				l.NewToken(l.STAR, "*"),
-			},
-			From: &l.Token{TokenType: l.IDENTIFIER, Literal: "mytable"},
-		},
-	}
-	res, err := parser.parseSelectStatement()
-	assert.NoError(t, err)
-	assert.Equal(t, &expected, res)
-}
-
 func TestParseSelectStatementNoFrom(t *testing.T) {
 	lexer := l.NewLexer("select * myTable;")
 	parser := NewParser(*lexer)
@@ -101,25 +22,6 @@ func TestParseSelectStatementNoIdentifierAfterFrom(t *testing.T) {
 
 	_, err := parser.parseSelectStatement()
 	assert.Error(t, err)
-}
-
-func TestParseStatementWithSelect(t *testing.T) {
-	lexer := l.NewLexer("select * FROM myTable;")
-	parser := NewParser(*lexer)
-
-	expected := &Statement{
-		Kind: SelectKind,
-		SelectStatement: &SelectStatement{
-			SelectItems: &[]l.Token{
-				l.NewToken(l.STAR, "*"),
-			},
-			From: &l.Token{TokenType: l.IDENTIFIER, Literal: "mytable"},
-		},
-	}
-
-	stmtRes, err := parser.ParseStatement()
-	assert.NoError(t, err)
-	assert.Equal(t, expected, stmtRes)
 }
 
 func TestParseStatementWithCreateTableInvalid(t *testing.T) {
@@ -339,7 +241,7 @@ func TestParseSelectClause2(t *testing.T) {
 		},
 	}
 
-	fromRes, err := parser.parseSelectClause2()
+	fromRes, err := parser.parseSelectClause()
 	assert.NoError(t, err)
 	assert.Equal(t, expected, fromRes)
 }
@@ -348,9 +250,9 @@ func TestParseFromClauseTableOnly(t *testing.T) {
 	lexer := l.NewLexer("from sometbl")
 	parser := NewParser(*lexer)
 
-	expected := &TableFrom2{TableName: "sometbl"}
+	expected := &TableFrom{TableName: "sometbl"}
 
-	fromRes, err := parser.parseFromClause2()
+	fromRes, err := parser.parseFromClause()
 	assert.NoError(t, err)
 	assert.Equal(t, expected, fromRes)
 }
@@ -359,9 +261,9 @@ func TestParseFromClauseWithSingleJoin(t *testing.T) {
 	lexer := l.NewLexer("from sometbl left join othertbl on sometbl.x = othertbl.y")
 	parser := NewParser(*lexer)
 
-	expected := &JoinFrom2{
-		Left:     &TableFrom2{TableName: "sometbl"},
-		Right:    &TableFrom2{TableName: "othertbl"},
+	expected := &JoinFrom{
+		Left:     &TableFrom{TableName: "sometbl"},
+		Right:    &TableFrom{TableName: "othertbl"},
 		JoinKind: Left,
 		Predicate: &Expression{
 			Kind: BinaryKind,
@@ -397,7 +299,7 @@ func TestParseFromClauseWithSingleJoin(t *testing.T) {
 		},
 	}
 
-	fromRes, err := parser.parseFromClause2()
+	fromRes, err := parser.parseFromClause()
 	assert.NoError(t, err)
 	assert.Equal(t, expected, fromRes)
 }
@@ -406,9 +308,9 @@ func TestParseFromClauseWitDoubleJoin(t *testing.T) {
 	lexer := l.NewLexer("from sometbl left join othertbl on sometbl.x = othertbl.y left join anotherone on othertbl.y = anotherone.z")
 	parser := NewParser(*lexer)
 
-	left := &JoinFrom2{
-		Left:     &TableFrom2{TableName: "sometbl"},
-		Right:    &TableFrom2{TableName: "othertbl"},
+	left := &JoinFrom{
+		Left:     &TableFrom{TableName: "sometbl"},
+		Right:    &TableFrom{TableName: "othertbl"},
 		JoinKind: Left,
 		Predicate: &Expression{
 			Kind: BinaryKind,
@@ -444,9 +346,9 @@ func TestParseFromClauseWitDoubleJoin(t *testing.T) {
 		},
 	}
 
-	expected := &JoinFrom2{
+	expected := &JoinFrom{
 		Left:     left,
-		Right:    &TableFrom2{TableName: "anotherone"},
+		Right:    &TableFrom{TableName: "anotherone"},
 		JoinKind: Left,
 		Predicate: &Expression{
 			Kind: BinaryKind,
@@ -482,7 +384,7 @@ func TestParseFromClauseWitDoubleJoin(t *testing.T) {
 		},
 	}
 
-	fromRes, err := parser.parseFromClause2()
+	fromRes, err := parser.parseFromClause()
 
 	assert.NoError(t, err)
 	assert.Equal(t, expected, fromRes)
@@ -521,10 +423,10 @@ func TestParseSelectStatementFull(t *testing.T) {
 		},
 	}
 
-	from := &JoinFrom2{
-		Left: &JoinFrom2{
-			Left:     &TableFrom2{TableName: "sometbl"},
-			Right:    &TableFrom2{TableName: "othertbl"},
+	from := &JoinFrom{
+		Left: &JoinFrom{
+			Left:     &TableFrom{TableName: "sometbl"},
+			Right:    &TableFrom{TableName: "othertbl"},
 			JoinKind: Left,
 			Predicate: &Expression{
 				Kind: BinaryKind,
@@ -559,7 +461,7 @@ func TestParseSelectStatementFull(t *testing.T) {
 				},
 			},
 		},
-		Right:    &TableFrom2{TableName: "anotherone"},
+		Right:    &TableFrom{TableName: "anotherone"},
 		JoinKind: Left,
 		Predicate: &Expression{
 			Kind: BinaryKind,
@@ -596,13 +498,13 @@ func TestParseSelectStatementFull(t *testing.T) {
 	}
 
 	expected := &Statement{
-		SelectStatement2: &SelectStatement2{
+		SelectStatement: &SelectStatement{
 			SelectItems: items,
 			From:        from,
 		},
 	}
 
-	fromRes, err := parser.parseSelectStatement2()
+	fromRes, err := parser.ParseStatement()
 
 	assert.NoError(t, err)
 	assert.Equal(t, expected, fromRes)

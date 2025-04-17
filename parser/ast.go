@@ -18,6 +18,7 @@ const (
 // should use interfaces in the future instead.
 type Statement struct {
 	SelectStatement      *SelectStatement
+	SelectStatement2     *SelectStatement2
 	CreateTableStatement *CreateTableStatement
 	InsertStatement      *InsertStatement
 	Kind                 AstKind
@@ -30,6 +31,7 @@ type SelectStatement struct {
 
 type SelectStatement2 struct {
 	SelectItems *[]Expression
+	From        FromInterface
 }
 
 type TableFrom2 struct {

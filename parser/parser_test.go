@@ -289,78 +289,6 @@ func TestParseInsertStatementWithoutColumnNames(t *testing.T) {
 	assert.Equal(t, expected.InsertStatement, stmt.InsertStatement, "Expected statements to be the same")
 }
 
-func TestParseFromTableOnly(t *testing.T) {
-	lexer := l.NewLexer("from mytable")
-	parser := NewParser(*lexer)
-
-	expected := &FromType{
-		Table: &l.Token{Literal: "mytable", TokenType: l.IDENTIFIER},
-		Kind:  UseTableKind,
-	}
-
-	fromRes, err := parser.parseSelectFrom()
-	assert.NoError(t, err)
-	assert.Equal(t, expected, fromRes, "Expected Froms to be the same")
-}
-
-// TODO: This currently fails because we dont have proper parsing of the expressions.
-// func TestParseFromWithSingleJoin(t *testing.T) {
-// 	lexer := l.NewLexer("from mytable left join anothertable on mytable.id = anothertable.id")
-// 	parser := NewParser(*lexer)
-
-// 	expected := &FromType{
-// 		Kind: UseJoinKind,
-// 		Join: &JoinFrom{
-// 			Left: FromType{
-// 				Table: &l.Token{Literal: "mytable", TokenType: l.IDENTIFIER},
-// 				Kind:  UseTableKind,
-// 			},
-// 			Right: FromType{
-// 				Table: &l.Token{Literal: "anothertable", TokenType: l.IDENTIFIER},
-// 				Kind:  UseTableKind,
-// 			},
-// 			Kind: Left,
-
-// 			Predicate: &Expression{
-// 				Kind: BinaryKind,
-// 				BinaryExpression: &BinaryExpression{
-// 					Left: &Expression{
-// 						Kind: QualifiedColumnKind,
-// 						QualifiedColumnExpression: &QualifiedColumnExpression{
-// 							TableName: &Expression{
-// 								Kind:                 IdentifierKind,
-// 								IdentifierExpression: &l.Token{TokenType: l.STRING, Literal: "mytable"},
-// 							},
-// 							ColumnName: &Expression{
-// 								Kind:                 IdentifierKind,
-// 								IdentifierExpression: &l.Token{TokenType: l.STRING, Literal: "id"},
-// 							},
-// 						},
-// 					},
-// 					Right: &Expression{
-// 						Kind: QualifiedColumnKind,
-// 						QualifiedColumnExpression: &QualifiedColumnExpression{
-// 							TableName: &Expression{
-// 								Kind:                 IdentifierKind,
-// 								IdentifierExpression: &l.Token{TokenType: l.STRING, Literal: "anothertable"},
-// 							},
-// 							ColumnName: &Expression{
-// 								Kind:                 IdentifierKind,
-// 								IdentifierExpression: &l.Token{TokenType: l.STRING, Literal: "id"},
-// 							},
-// 						},
-// 					},
-// 					Operator: &l.Token{TokenType: l.EQUALS, Literal: "="},
-// 				},
-// 			},
-// 		},
-// 	}
-
-// 	fromRes, err := parser.parseSelectFrom()
-// 	assert.NoError(t, err)
-// 	assert.Equal(t, expected, fromRes, "Expected Froms to be the same")
-// }
-
 func TestParseSelectClause2(t *testing.T) {
 	lexer := l.NewLexer("select player.name, team.name, coach.name, withoutcol")
 	parser := NewParser(*lexer)
@@ -555,6 +483,126 @@ func TestParseFromClauseWitDoubleJoin(t *testing.T) {
 	}
 
 	fromRes, err := parser.parseFromClause2()
+
+	assert.NoError(t, err)
+	assert.Equal(t, expected, fromRes)
+}
+
+func TestParseSelectStatementFull(t *testing.T) {
+	lexer := l.NewLexer("select sometbl.x, othertbl.x from sometbl left join othertbl on sometbl.x = othertbl.y left join anotherone on othertbl.y = anotherone.z")
+	parser := NewParser(*lexer)
+
+	items := &[]Expression{
+		Expression{
+			Kind: QualifiedColumnKind,
+			QualifiedColumnExpression: &QualifiedColumnExpression{
+				TableName: &Expression{
+					Kind:                 IdentifierKind,
+					IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "sometbl"},
+				},
+				ColumnName: &Expression{
+					Kind:                 IdentifierKind,
+					IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "x"},
+				},
+			},
+		},
+		Expression{
+			Kind: QualifiedColumnKind,
+			QualifiedColumnExpression: &QualifiedColumnExpression{
+				TableName: &Expression{
+					Kind:                 IdentifierKind,
+					IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "othertbl"},
+				},
+				ColumnName: &Expression{
+					Kind:                 IdentifierKind,
+					IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "x"},
+				},
+			},
+		},
+	}
+
+	from := &JoinFrom2{
+		Left: &JoinFrom2{
+			Left:     &TableFrom2{TableName: "sometbl"},
+			Right:    &TableFrom2{TableName: "othertbl"},
+			JoinKind: Left,
+			Predicate: &Expression{
+				Kind: BinaryKind,
+				BinaryExpression: &BinaryExpression{
+					Left: &Expression{
+						Kind: QualifiedColumnKind,
+						QualifiedColumnExpression: &QualifiedColumnExpression{
+							TableName: &Expression{
+								Kind:                 IdentifierKind,
+								IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "sometbl"},
+							},
+							ColumnName: &Expression{
+								Kind:                 IdentifierKind,
+								IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "x"},
+							},
+						},
+					},
+					Right: &Expression{
+						Kind: QualifiedColumnKind,
+						QualifiedColumnExpression: &QualifiedColumnExpression{
+							TableName: &Expression{
+								Kind:                 IdentifierKind,
+								IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "othertbl"},
+							},
+							ColumnName: &Expression{
+								Kind:                 IdentifierKind,
+								IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "y"},
+							},
+						},
+					},
+					Operator: &l.Token{TokenType: l.EQUALS, Literal: "="},
+				},
+			},
+		},
+		Right:    &TableFrom2{TableName: "anotherone"},
+		JoinKind: Left,
+		Predicate: &Expression{
+			Kind: BinaryKind,
+			BinaryExpression: &BinaryExpression{
+				Left: &Expression{
+					Kind: QualifiedColumnKind,
+					QualifiedColumnExpression: &QualifiedColumnExpression{
+						TableName: &Expression{
+							Kind:                 IdentifierKind,
+							IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "othertbl"},
+						},
+						ColumnName: &Expression{
+							Kind:                 IdentifierKind,
+							IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "y"},
+						},
+					},
+				},
+				Right: &Expression{
+					Kind: QualifiedColumnKind,
+					QualifiedColumnExpression: &QualifiedColumnExpression{
+						TableName: &Expression{
+							Kind:                 IdentifierKind,
+							IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "anotherone"},
+						},
+						ColumnName: &Expression{
+							Kind:                 IdentifierKind,
+							IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "z"},
+						},
+					},
+				},
+				Operator: &l.Token{TokenType: l.EQUALS, Literal: "="},
+			},
+		},
+	}
+
+	expected := &Statement{
+		SelectStatement2: &SelectStatement2{
+			SelectItems: items,
+			From:        from,
+		},
+	}
+
+	fromRes, err := parser.parseSelectStatement2()
 
 	assert.NoError(t, err)
 	assert.Equal(t, expected, fromRes)

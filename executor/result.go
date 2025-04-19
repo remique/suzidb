@@ -3,6 +3,7 @@ package executor
 import (
 	"encoding/json"
 	"example.com/suzidb/meta"
+	"example.com/suzidb/planner"
 	"example.com/suzidb/storage"
 	"fmt"
 	"strings"
@@ -61,6 +62,7 @@ func NewScanExecutor(s storage.Storage, c storage.Catalog, table meta.Table) *Sc
 func (se *ScanExecutor) Next() (*meta.Row, error) {
 	if se.cursor < len(se.Keys) {
 		key := se.Keys[se.cursor]
+		se.cursor++
 
 		value := se.Storage.Get(key)
 		var row meta.Row
@@ -73,6 +75,31 @@ func (se *ScanExecutor) Next() (*meta.Row, error) {
 	}
 
 	return nil, fmt.Errorf("Cursor out of bounds")
+}
+
+func (e *Executor) queryExecutorBuilder(node planner.NodeQuery) (QueryExecutor, error) {
+	switch n := node.(type) {
+	case *planner.NodeScan:
+		{
+			return NewScanExecutor(e.Storage, e.Catalog, n.Table), nil
+		}
+	case *planner.NestedLoopJoin:
+		{
+			return nil, nil
+			// left, err := e.queryExecutorBuilder(n.Left)
+			// if err != nil {
+			// 	return nil, err
+			// }
+
+			// right, err := e.queryExecutorBuilder(n.Right)
+			// if err != nil {
+			// 	return nil, err
+			// }
+		}
+	default:
+		return nil, fmt.Errorf("Unsupported query")
+	}
+
 }
 
 type SelectResult struct {

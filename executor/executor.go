@@ -66,11 +66,30 @@ func (e *Executor) executeInsert(insertPlan p.InsertPlan) (ExecutionResult, erro
 }
 
 func (e *Executor) executeSelect(selectPlan p.SelectPlan) (ExecutionResult, error) {
-	switch internal := selectPlan.Node.(type) {
+	executor, err := e.queryExecutorBuilder(selectPlan.Node)
+	if err != nil {
+		return nil, err
+	}
+
+	var rows []m.Row
+	for {
+		row, err := executor.Next()
+		if row == nil {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		rows = append(rows, *row)
+	}
+
+	// TODO: Temporary solution until I find a way to merge columns of NestedLoopJoin
+	switch n := selectPlan.Node.(type) {
 	case *p.NodeScan:
-		return e.executeNodeScan(*internal)
+		return &SelectResult{Rows: rows, Columns: n.Table.Columns}, nil
 	default:
-		return nil, fmt.Errorf("Invalid Node query")
+		return &SelectResult{Rows: rows, Columns: []m.Column{}}, nil
 	}
 }
 

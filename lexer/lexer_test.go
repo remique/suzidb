@@ -204,3 +204,41 @@ func TestLexerSelectWithJoin(t *testing.T) {
 		assert.Equal(t, test.expectedToken, tok)
 	}
 }
+
+func TestLexerInsertMultiple(t *testing.T) {
+	lexer := NewLexer(`INSERT INTO products(id, productname) VALUES 
+	(1, 'someproduct'),
+	(2, 'anotherproduct');`)
+
+	tests := []struct {
+		expectedToken Token
+	}{
+		{expectedToken: NewToken(INSERT, "insert")},
+		{expectedToken: NewToken(INTO, "into")},
+		{expectedToken: NewToken(IDENTIFIER, "products")},
+		{expectedToken: NewToken(L_PAREN, "(")},
+		{expectedToken: NewToken(IDENTIFIER, "id")},
+		{expectedToken: NewToken(COMMA, ",")},
+		{expectedToken: NewToken(IDENTIFIER, "productname")},
+		{expectedToken: NewToken(R_PAREN, ")")},
+		{expectedToken: NewToken(VALUES, "values")},
+		{expectedToken: NewToken(L_PAREN, "(")},
+		{expectedToken: NewToken(INT, "1")},
+		{expectedToken: NewToken(COMMA, ",")},
+		{expectedToken: NewToken(STRING, "someproduct")},
+		{expectedToken: NewToken(R_PAREN, ")")},
+		{expectedToken: NewToken(COMMA, ",")},
+		{expectedToken: NewToken(L_PAREN, "(")},
+		{expectedToken: NewToken(INT, "2")},
+		{expectedToken: NewToken(COMMA, ",")},
+		{expectedToken: NewToken(STRING, "anotherproduct")},
+		{expectedToken: NewToken(R_PAREN, ")")},
+		{expectedToken: NewToken(SEMICOLON, ";")},
+	}
+
+	for _, test := range tests {
+		tok := lexer.NextToken()
+
+		assert.Equal(t, test.expectedToken, tok)
+	}
+}

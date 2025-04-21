@@ -88,6 +88,8 @@ func (e *Executor) executeSelect(selectPlan p.SelectPlan) (ExecutionResult, erro
 	switch n := selectPlan.Node.(type) {
 	case *p.NodeScan:
 		return &SelectResult{Rows: rows, Columns: n.Table.Columns}, nil
+	case *p.NestedLoopJoin:
+		return &SelectResult{Rows: rows, Columns: []m.Column{}}, nil
 	default:
 		return &SelectResult{Rows: rows, Columns: []m.Column{}}, nil
 	}

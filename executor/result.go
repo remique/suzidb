@@ -95,9 +95,6 @@ func (nlj *NestedLoopJoinExecutor) Next() (*meta.Row, error) {
 		return nil, err
 	}
 
-	fmt.Println("left", leftRes)
-	fmt.Println("right", rightRes)
-
 	if leftRes != nil {
 		// now merge rows and evaluate
 		merged := meta.MergeRows2(

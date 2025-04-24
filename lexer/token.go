@@ -12,6 +12,8 @@ const (
 	EQUALS    = "="
 	PLUS      = "+"
 	STAR      = "*"
+	GREATER   = ">"
+	LESS      = "<"
 	SEMICOLON = ";"
 	COMMA     = ","
 	DOT       = "."

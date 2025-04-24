@@ -242,3 +242,27 @@ func TestLexerInsertMultiple(t *testing.T) {
 		assert.Equal(t, test.expectedToken, tok)
 	}
 }
+
+func TestLexerSelectWithWhere(t *testing.T) {
+	lexer := NewLexer(`SELECT * FROM sometbl WHERE x > 5;`)
+
+	tests := []struct {
+		expectedToken Token
+	}{
+		{expectedToken: NewToken(SELECT, "select")},
+		{expectedToken: NewToken(STAR, "*")},
+		{expectedToken: NewToken(FROM, "from")},
+		{expectedToken: NewToken(IDENTIFIER, "sometbl")},
+		{expectedToken: NewToken(WHERE, "where")},
+		{expectedToken: NewToken(IDENTIFIER, "x")},
+		{expectedToken: NewToken(GREATER, ">")},
+		{expectedToken: NewToken(INT, "5")},
+		{expectedToken: NewToken(SEMICOLON, ";")},
+	}
+
+	for _, test := range tests {
+		tok := lexer.NextToken()
+
+		assert.Equal(t, test.expectedToken, tok)
+	}
+}

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"example.com/suzidb/evaluator"
 	m "example.com/suzidb/meta"
 	p "example.com/suzidb/planner"
 	s "example.com/suzidb/storage"
@@ -114,56 +113,4 @@ func (e *Executor) executeNodeScan(node p.NodeScan) (ExecutionResult, error) {
 	}
 
 	return &SelectResult{Rows: rows, Columns: node.Table.Columns}, nil
-}
-
-func (e *Executor) executeNestedLoopJoin(node p.NestedLoopJoin) (ExecutionResult, error) {
-	leftAsScan, ok := node.Left.(*p.NodeScan)
-	if !ok {
-		return nil, fmt.Errorf("expected NodeScan but got %T", node.Left)
-	}
-	rightAsScan, ok := node.Right.(*p.NodeScan)
-	if !ok {
-		return nil, fmt.Errorf("expected NodeScan but got %T", node.Left)
-	}
-
-	left, err := e.executeNodeScan(*leftAsScan)
-	if err != nil {
-		return nil, err
-	}
-
-	right, err := e.executeNodeScan(*rightAsScan)
-	if err != nil {
-		return nil, err
-	}
-
-	finalRows := []m.Row{}
-
-	for _, leftItem := range left.(*SelectResult).Rows {
-		for _, rightItem := range right.(*SelectResult).Rows {
-			// merge rows
-			merged := m.MergeRows(
-				leftItem,
-				rightItem,
-				leftAsScan.Table.Name,
-				rightAsScan.Table.Name,
-			)
-
-			match, err := evaluator.NewEval(node.Predicate).Evaluate(evaluator.WithRow(merged))
-			if err != nil {
-				return nil, err
-			}
-
-			matchAsNativeVal, err := evaluator.ValueToNative(match)
-			if err != nil {
-				return nil, err
-			}
-
-			if matchAsNativeVal == true {
-				finalRows = append(finalRows, merged)
-			}
-		}
-	}
-
-	// TODO: Get all merged columns in an effective way
-	return &SelectResult{Rows: finalRows, Columns: []m.Column{}}, nil
 }

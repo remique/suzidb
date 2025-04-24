@@ -27,22 +27,13 @@ func (ee *ExpressionEvaluator) Evaluate(opts ...EvalOpts) (Value, error) {
 
 	switch ee.expr.Kind {
 	case parser.LiteralKind:
-		{
-			return &LiteralValue{Value: ee.expr.LiteralExpression.Literal}, nil
-		}
+		return &LiteralValue{Value: ee.expr.LiteralExpression.Literal}, nil
 	case parser.BinaryKind:
-		{
-			return ee.evaluateBinaryExpr()
-		}
+		return ee.evaluateBinaryExpr()
 	case parser.QualifiedColumnKind:
-		{
-			// TODO: true?
-			return ee.evaluateQualifiedColumn(ee.opts.row, true)
-		}
+		return ee.evaluateQualifiedColumn(ee.opts.row, true)
 	default:
-		{
-			return nil, fmt.Errorf("Unsupported evaluation")
-		}
+		return nil, fmt.Errorf("Unsupported evaluation")
 	}
 }
 

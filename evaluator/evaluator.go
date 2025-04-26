@@ -28,6 +28,11 @@ func (ee *ExpressionEvaluator) Evaluate(opts ...EvalOpts) (Value, error) {
 	switch ee.expr.Kind {
 	case parser.LiteralKind:
 		return &LiteralValue{Value: ee.expr.LiteralExpression.Literal}, nil
+	// NOTE: Now this is probably kind of wrong, but I need some other way to
+	// convert strings to their Value for both Literals and Identifiers. So for now
+	// I will leave it at that.
+	case parser.IdentifierKind:
+		return &LiteralValue{Value: ee.expr.IdentifierExpression.Literal}, nil
 	case parser.BinaryKind:
 		return ee.evaluateBinaryExpr()
 	case parser.QualifiedColumnKind:

@@ -23,7 +23,7 @@ func WithMergeRow(row Row, prefix string) MergeRowOpts {
 	}
 }
 
-func MergeRows2(opts ...MergeRowOpts) Row {
+func MergeRows(opts ...MergeRowOpts) Row {
 	mro := NewMergeRowOptions()
 	final := make(map[string]interface{})
 

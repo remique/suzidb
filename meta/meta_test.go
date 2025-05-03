@@ -24,7 +24,7 @@ func TestMergeRows2WithPrefixes(t *testing.T) {
 		"brands.brandname": "suzuki",
 	}
 
-	res := MergeRows2(
+	res := MergeRows(
 		WithMergeRow(left, "cars"),
 		WithMergeRow(right, "brands"),
 	)
@@ -49,7 +49,7 @@ func TestMergeRows2NoPrefixes(t *testing.T) {
 		"brandname": "suzuki",
 	}
 
-	res := MergeRows2(
+	res := MergeRows(
 		WithMergeRow(left, ""),
 		WithMergeRow(right, ""),
 	)

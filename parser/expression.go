@@ -10,7 +10,6 @@ type ExpressionKind uint
 const (
 	LiteralKind ExpressionKind = iota
 	ColumnKind
-	IdentifierKind
 	BinaryKind
 )
 
@@ -37,11 +36,10 @@ const (
 
 // TODO: Refactor this into interfaces.
 type Expression struct {
-	LiteralExpression    *lexer.Token
-	ColumnExpression     *ColumnExpression
-	IdentifierExpression *lexer.Token
-	BinaryExpression     *BinaryExpression
-	Kind                 ExpressionKind
+	LiteralExpression *lexer.Token
+	ColumnExpression  *ColumnExpression
+	BinaryExpression  *BinaryExpression
+	Kind              ExpressionKind
 }
 
 func tokenToPrecedence(token lexer.Token) Precedence {

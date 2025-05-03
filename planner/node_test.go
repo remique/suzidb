@@ -31,8 +31,10 @@ func TestBuildNodeScan(t *testing.T) {
 		SelectStatement: &parser.SelectStatement{
 			SelectItems: &[]parser.Expression{
 				parser.Expression{
-					Kind:                 parser.IdentifierKind,
-					IdentifierExpression: &lexer.Token{TokenType: lexer.IDENTIFIER, Literal: "withoutcol"},
+					Kind: parser.ColumnKind,
+					ColumnExpression: &parser.ColumnExpression{
+						TableName: "withoutcol",
+					},
 				},
 			},
 			From: &parser.TableFrom{TableName: "mytable"},

@@ -35,8 +35,8 @@ func (ee *ExpressionEvaluator) Evaluate(opts ...EvalOpts) (Value, error) {
 		return &LiteralValue{Value: ee.expr.IdentifierExpression.Literal}, nil
 	case parser.BinaryKind:
 		return ee.evaluateBinaryExpr()
-	case parser.QualifiedColumnKind:
-		return ee.evaluateQualifiedColumn(ee.opts.row, true)
+	case parser.ColumnKind:
+		return ee.evaluateColumn(ee.opts.row)
 	default:
 		return nil, fmt.Errorf("Unsupported evaluation")
 	}
@@ -69,15 +69,17 @@ func (ee *ExpressionEvaluator) evaluateBinaryExpr() (Value, error) {
 	}
 }
 
-func (ee *ExpressionEvaluator) evaluateQualifiedColumn(row meta.Row, prefix bool) (Value, error) {
-	keyStr := ee.expr.QualifiedColumnExpression.ColumnName.IdentifierExpression.Literal
-	if prefix {
+func (ee *ExpressionEvaluator) evaluateColumn(row meta.Row) (Value, error) {
+	keyStr := ee.expr.ColumnExpression.TableName
+	if ee.expr.ColumnExpression.ColumnName != "" {
+		fmt.Println("Column: ", ee.expr.ColumnExpression.ColumnName)
 		keyStr = strings.Join(
 			[]string{
-				ee.expr.QualifiedColumnExpression.
-					TableName.IdentifierExpression.Literal,
+				ee.expr.ColumnExpression.
+					TableName,
 				".",
-				keyStr,
+				ee.expr.ColumnExpression.
+					ColumnName,
 			},
 			"")
 	}

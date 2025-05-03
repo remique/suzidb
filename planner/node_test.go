@@ -75,29 +75,17 @@ func TestBuildJoin(t *testing.T) {
 		Kind: parser.BinaryKind,
 		BinaryExpression: &parser.BinaryExpression{
 			Left: &parser.Expression{
-				Kind: parser.QualifiedColumnKind,
-				QualifiedColumnExpression: &parser.QualifiedColumnExpression{
-					TableName: &parser.Expression{
-						Kind:                 parser.IdentifierKind,
-						IdentifierExpression: &lexer.Token{TokenType: lexer.IDENTIFIER, Literal: "sometbl"},
-					},
-					ColumnName: &parser.Expression{
-						Kind:                 parser.IdentifierKind,
-						IdentifierExpression: &lexer.Token{TokenType: lexer.IDENTIFIER, Literal: "id"},
-					},
+				Kind: parser.ColumnKind,
+				ColumnExpression: &parser.ColumnExpression{
+					TableName:  "sometbl",
+					ColumnName: "id",
 				},
 			},
 			Right: &parser.Expression{
-				Kind: parser.QualifiedColumnKind,
-				QualifiedColumnExpression: &parser.QualifiedColumnExpression{
-					TableName: &parser.Expression{
-						Kind:                 parser.IdentifierKind,
-						IdentifierExpression: &lexer.Token{TokenType: lexer.IDENTIFIER, Literal: "othertbl"},
-					},
-					ColumnName: &parser.Expression{
-						Kind:                 parser.IdentifierKind,
-						IdentifierExpression: &lexer.Token{TokenType: lexer.IDENTIFIER, Literal: "id"},
-					},
+				Kind: parser.ColumnKind,
+				ColumnExpression: &parser.ColumnExpression{
+					TableName:  "othertbl",
+					ColumnName: "id",
 				},
 			},
 			Operator: &lexer.Token{TokenType: lexer.EQUALS, Literal: "="},
@@ -108,29 +96,17 @@ func TestBuildJoin(t *testing.T) {
 		Kind: parser.BinaryKind,
 		BinaryExpression: &parser.BinaryExpression{
 			Left: &parser.Expression{
-				Kind: parser.QualifiedColumnKind,
-				QualifiedColumnExpression: &parser.QualifiedColumnExpression{
-					TableName: &parser.Expression{
-						Kind:                 parser.IdentifierKind,
-						IdentifierExpression: &lexer.Token{TokenType: lexer.IDENTIFIER, Literal: "othertbl"},
-					},
-					ColumnName: &parser.Expression{
-						Kind:                 parser.IdentifierKind,
-						IdentifierExpression: &lexer.Token{TokenType: lexer.IDENTIFIER, Literal: "id"},
-					},
+				Kind: parser.ColumnKind,
+				ColumnExpression: &parser.ColumnExpression{
+					TableName:  "othertbl",
+					ColumnName: "id",
 				},
 			},
 			Right: &parser.Expression{
-				Kind: parser.QualifiedColumnKind,
-				QualifiedColumnExpression: &parser.QualifiedColumnExpression{
-					TableName: &parser.Expression{
-						Kind:                 parser.IdentifierKind,
-						IdentifierExpression: &lexer.Token{TokenType: lexer.IDENTIFIER, Literal: "anotherone"},
-					},
-					ColumnName: &parser.Expression{
-						Kind:                 parser.IdentifierKind,
-						IdentifierExpression: &lexer.Token{TokenType: lexer.IDENTIFIER, Literal: "id"},
-					},
+				Kind: parser.ColumnKind,
+				ColumnExpression: &parser.ColumnExpression{
+					TableName:  "anotherone",
+					ColumnName: "id",
 				},
 			},
 			Operator: &lexer.Token{TokenType: lexer.EQUALS, Literal: "="},

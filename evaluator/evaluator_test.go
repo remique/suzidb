@@ -93,16 +93,10 @@ func TestEvaluateLiteralEqualsFalse(t *testing.T) {
 
 func TestEvalQualifiedColumnWithPrefix(t *testing.T) {
 	expr := &parser.Expression{
-		Kind: parser.QualifiedColumnKind,
-		QualifiedColumnExpression: &parser.QualifiedColumnExpression{
-			TableName: &parser.Expression{
-				Kind:                 parser.IdentifierKind,
-				IdentifierExpression: &lexer.Token{TokenType: lexer.STRING, Literal: "tbl"},
-			},
-			ColumnName: &parser.Expression{
-				Kind:                 parser.IdentifierKind,
-				IdentifierExpression: &lexer.Token{TokenType: lexer.STRING, Literal: "col"},
-			},
+		Kind: parser.ColumnKind,
+		ColumnExpression: &parser.ColumnExpression{
+			TableName:  "tbl",
+			ColumnName: "col",
 		},
 	}
 	row := map[string]interface{}{
@@ -111,7 +105,7 @@ func TestEvalQualifiedColumnWithPrefix(t *testing.T) {
 	}
 
 	expected := &IntValue{Value: 1}
-	res, err := NewEval(expr).evaluateQualifiedColumn(row, true)
+	res, err := NewEval(expr).evaluateColumn(row)
 
 	assert.NoError(t, err)
 	assert.Equal(t, expected, res)
@@ -119,16 +113,9 @@ func TestEvalQualifiedColumnWithPrefix(t *testing.T) {
 
 func TestEvalQualifiedColumnWithoutPrefix(t *testing.T) {
 	expr := &parser.Expression{
-		Kind: parser.QualifiedColumnKind,
-		QualifiedColumnExpression: &parser.QualifiedColumnExpression{
-			TableName: &parser.Expression{
-				Kind:                 parser.IdentifierKind,
-				IdentifierExpression: &lexer.Token{TokenType: lexer.STRING, Literal: "tbl"},
-			},
-			ColumnName: &parser.Expression{
-				Kind:                 parser.IdentifierKind,
-				IdentifierExpression: &lexer.Token{TokenType: lexer.STRING, Literal: "col"},
-			},
+		Kind: parser.ColumnKind,
+		ColumnExpression: &parser.ColumnExpression{
+			TableName: "col",
 		},
 	}
 	row := map[string]interface{}{
@@ -137,7 +124,7 @@ func TestEvalQualifiedColumnWithoutPrefix(t *testing.T) {
 	}
 
 	expected := &IntValue{Value: 1}
-	res, err := NewEval(expr).evaluateQualifiedColumn(row, false)
+	res, err := NewEval(expr).evaluateColumn(row)
 
 	assert.NoError(t, err)
 	assert.Equal(t, expected, res)
@@ -150,29 +137,17 @@ func TestEvalBinaryColumnExpr(t *testing.T) {
 		Kind: parser.BinaryKind,
 		BinaryExpression: &parser.BinaryExpression{
 			Left: &parser.Expression{
-				Kind: parser.QualifiedColumnKind,
-				QualifiedColumnExpression: &parser.QualifiedColumnExpression{
-					TableName: &parser.Expression{
-						Kind:                 parser.IdentifierKind,
-						IdentifierExpression: &lexer.Token{TokenType: lexer.STRING, Literal: "tbl1"},
-					},
-					ColumnName: &parser.Expression{
-						Kind:                 parser.IdentifierKind,
-						IdentifierExpression: &lexer.Token{TokenType: lexer.STRING, Literal: "col"},
-					},
+				Kind: parser.ColumnKind,
+				ColumnExpression: &parser.ColumnExpression{
+					TableName:  "tbl1",
+					ColumnName: "col",
 				},
 			},
 			Right: &parser.Expression{
-				Kind: parser.QualifiedColumnKind,
-				QualifiedColumnExpression: &parser.QualifiedColumnExpression{
-					TableName: &parser.Expression{
-						Kind:                 parser.IdentifierKind,
-						IdentifierExpression: &lexer.Token{TokenType: lexer.STRING, Literal: "tbl2"},
-					},
-					ColumnName: &parser.Expression{
-						Kind:                 parser.IdentifierKind,
-						IdentifierExpression: &lexer.Token{TokenType: lexer.STRING, Literal: "col"},
-					},
+				Kind: parser.ColumnKind,
+				ColumnExpression: &parser.ColumnExpression{
+					TableName:  "tbl2",
+					ColumnName: "col",
 				},
 			},
 			Operator: &lexer.Token{TokenType: lexer.EQUALS, Literal: "="},

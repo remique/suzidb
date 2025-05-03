@@ -197,47 +197,31 @@ func TestParseSelectClause2(t *testing.T) {
 
 	expected := &[]Expression{
 		Expression{
-			Kind: QualifiedColumnKind,
-			QualifiedColumnExpression: &QualifiedColumnExpression{
-				TableName: &Expression{
-					Kind:                 IdentifierKind,
-					IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "player"},
-				},
-				ColumnName: &Expression{
-					Kind:                 IdentifierKind,
-					IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "name"},
-				},
+			Kind: ColumnKind,
+			ColumnExpression: &ColumnExpression{
+				TableName:  "player",
+				ColumnName: "name",
 			},
 		},
 		Expression{
-			Kind: QualifiedColumnKind,
-			QualifiedColumnExpression: &QualifiedColumnExpression{
-				TableName: &Expression{
-					Kind:                 IdentifierKind,
-					IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "team"},
-				},
-				ColumnName: &Expression{
-					Kind:                 IdentifierKind,
-					IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "name"},
-				},
+			Kind: ColumnKind,
+			ColumnExpression: &ColumnExpression{
+				TableName:  "team",
+				ColumnName: "name",
 			},
 		},
 		Expression{
-			Kind: QualifiedColumnKind,
-			QualifiedColumnExpression: &QualifiedColumnExpression{
-				TableName: &Expression{
-					Kind:                 IdentifierKind,
-					IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "coach"},
-				},
-				ColumnName: &Expression{
-					Kind:                 IdentifierKind,
-					IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "name"},
-				},
+			Kind: ColumnKind,
+			ColumnExpression: &ColumnExpression{
+				TableName:  "coach",
+				ColumnName: "name",
 			},
 		},
 		Expression{
-			Kind:                 IdentifierKind,
-			IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "withoutcol"},
+			Kind: ColumnKind,
+			ColumnExpression: &ColumnExpression{
+				TableName: "withoutcol",
+			},
 		},
 	}
 
@@ -269,29 +253,17 @@ func TestParseFromClauseWithSingleJoin(t *testing.T) {
 			Kind: BinaryKind,
 			BinaryExpression: &BinaryExpression{
 				Left: &Expression{
-					Kind: QualifiedColumnKind,
-					QualifiedColumnExpression: &QualifiedColumnExpression{
-						TableName: &Expression{
-							Kind:                 IdentifierKind,
-							IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "sometbl"},
-						},
-						ColumnName: &Expression{
-							Kind:                 IdentifierKind,
-							IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "x"},
-						},
+					Kind: ColumnKind,
+					ColumnExpression: &ColumnExpression{
+						TableName:  "sometbl",
+						ColumnName: "x",
 					},
 				},
 				Right: &Expression{
-					Kind: QualifiedColumnKind,
-					QualifiedColumnExpression: &QualifiedColumnExpression{
-						TableName: &Expression{
-							Kind:                 IdentifierKind,
-							IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "othertbl"},
-						},
-						ColumnName: &Expression{
-							Kind:                 IdentifierKind,
-							IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "y"},
-						},
+					Kind: ColumnKind,
+					ColumnExpression: &ColumnExpression{
+						TableName:  "othertbl",
+						ColumnName: "y",
 					},
 				},
 				Operator: &l.Token{TokenType: l.EQUALS, Literal: "="},
@@ -316,29 +288,17 @@ func TestParseFromClauseWitDoubleJoin(t *testing.T) {
 			Kind: BinaryKind,
 			BinaryExpression: &BinaryExpression{
 				Left: &Expression{
-					Kind: QualifiedColumnKind,
-					QualifiedColumnExpression: &QualifiedColumnExpression{
-						TableName: &Expression{
-							Kind:                 IdentifierKind,
-							IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "sometbl"},
-						},
-						ColumnName: &Expression{
-							Kind:                 IdentifierKind,
-							IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "x"},
-						},
+					Kind: ColumnKind,
+					ColumnExpression: &ColumnExpression{
+						TableName:  "sometbl",
+						ColumnName: "x",
 					},
 				},
 				Right: &Expression{
-					Kind: QualifiedColumnKind,
-					QualifiedColumnExpression: &QualifiedColumnExpression{
-						TableName: &Expression{
-							Kind:                 IdentifierKind,
-							IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "othertbl"},
-						},
-						ColumnName: &Expression{
-							Kind:                 IdentifierKind,
-							IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "y"},
-						},
+					Kind: ColumnKind,
+					ColumnExpression: &ColumnExpression{
+						TableName:  "othertbl",
+						ColumnName: "y",
 					},
 				},
 				Operator: &l.Token{TokenType: l.EQUALS, Literal: "="},
@@ -354,29 +314,17 @@ func TestParseFromClauseWitDoubleJoin(t *testing.T) {
 			Kind: BinaryKind,
 			BinaryExpression: &BinaryExpression{
 				Left: &Expression{
-					Kind: QualifiedColumnKind,
-					QualifiedColumnExpression: &QualifiedColumnExpression{
-						TableName: &Expression{
-							Kind:                 IdentifierKind,
-							IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "othertbl"},
-						},
-						ColumnName: &Expression{
-							Kind:                 IdentifierKind,
-							IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "y"},
-						},
+					Kind: ColumnKind,
+					ColumnExpression: &ColumnExpression{
+						TableName:  "othertbl",
+						ColumnName: "y",
 					},
 				},
 				Right: &Expression{
-					Kind: QualifiedColumnKind,
-					QualifiedColumnExpression: &QualifiedColumnExpression{
-						TableName: &Expression{
-							Kind:                 IdentifierKind,
-							IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "anotherone"},
-						},
-						ColumnName: &Expression{
-							Kind:                 IdentifierKind,
-							IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "z"},
-						},
+					Kind: ColumnKind,
+					ColumnExpression: &ColumnExpression{
+						TableName:  "anotherone",
+						ColumnName: "z",
 					},
 				},
 				Operator: &l.Token{TokenType: l.EQUALS, Literal: "="},
@@ -396,29 +344,17 @@ func TestParseSelectStatementFull(t *testing.T) {
 
 	items := &[]Expression{
 		Expression{
-			Kind: QualifiedColumnKind,
-			QualifiedColumnExpression: &QualifiedColumnExpression{
-				TableName: &Expression{
-					Kind:                 IdentifierKind,
-					IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "sometbl"},
-				},
-				ColumnName: &Expression{
-					Kind:                 IdentifierKind,
-					IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "x"},
-				},
+			Kind: ColumnKind,
+			ColumnExpression: &ColumnExpression{
+				TableName:  "sometbl",
+				ColumnName: "x",
 			},
 		},
 		Expression{
-			Kind: QualifiedColumnKind,
-			QualifiedColumnExpression: &QualifiedColumnExpression{
-				TableName: &Expression{
-					Kind:                 IdentifierKind,
-					IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "othertbl"},
-				},
-				ColumnName: &Expression{
-					Kind:                 IdentifierKind,
-					IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "x"},
-				},
+			Kind: ColumnKind,
+			ColumnExpression: &ColumnExpression{
+				TableName:  "othertbl",
+				ColumnName: "x",
 			},
 		},
 	}
@@ -432,29 +368,17 @@ func TestParseSelectStatementFull(t *testing.T) {
 				Kind: BinaryKind,
 				BinaryExpression: &BinaryExpression{
 					Left: &Expression{
-						Kind: QualifiedColumnKind,
-						QualifiedColumnExpression: &QualifiedColumnExpression{
-							TableName: &Expression{
-								Kind:                 IdentifierKind,
-								IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "sometbl"},
-							},
-							ColumnName: &Expression{
-								Kind:                 IdentifierKind,
-								IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "x"},
-							},
+						Kind: ColumnKind,
+						ColumnExpression: &ColumnExpression{
+							TableName:  "sometbl",
+							ColumnName: "x",
 						},
 					},
 					Right: &Expression{
-						Kind: QualifiedColumnKind,
-						QualifiedColumnExpression: &QualifiedColumnExpression{
-							TableName: &Expression{
-								Kind:                 IdentifierKind,
-								IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "othertbl"},
-							},
-							ColumnName: &Expression{
-								Kind:                 IdentifierKind,
-								IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "y"},
-							},
+						Kind: ColumnKind,
+						ColumnExpression: &ColumnExpression{
+							TableName:  "othertbl",
+							ColumnName: "y",
 						},
 					},
 					Operator: &l.Token{TokenType: l.EQUALS, Literal: "="},
@@ -467,29 +391,17 @@ func TestParseSelectStatementFull(t *testing.T) {
 			Kind: BinaryKind,
 			BinaryExpression: &BinaryExpression{
 				Left: &Expression{
-					Kind: QualifiedColumnKind,
-					QualifiedColumnExpression: &QualifiedColumnExpression{
-						TableName: &Expression{
-							Kind:                 IdentifierKind,
-							IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "othertbl"},
-						},
-						ColumnName: &Expression{
-							Kind:                 IdentifierKind,
-							IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "y"},
-						},
+					Kind: ColumnKind,
+					ColumnExpression: &ColumnExpression{
+						TableName:  "othertbl",
+						ColumnName: "y",
 					},
 				},
 				Right: &Expression{
-					Kind: QualifiedColumnKind,
-					QualifiedColumnExpression: &QualifiedColumnExpression{
-						TableName: &Expression{
-							Kind:                 IdentifierKind,
-							IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "anotherone"},
-						},
-						ColumnName: &Expression{
-							Kind:                 IdentifierKind,
-							IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "z"},
-						},
+					Kind: ColumnKind,
+					ColumnExpression: &ColumnExpression{
+						TableName:  "anotherone",
+						ColumnName: "z",
 					},
 				},
 				Operator: &l.Token{TokenType: l.EQUALS, Literal: "="},

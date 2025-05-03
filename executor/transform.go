@@ -1,8 +1,6 @@
 package executor
 
 import (
-	"fmt"
-
 	"example.com/suzidb/evaluator"
 	"example.com/suzidb/meta"
 	"example.com/suzidb/parser"
@@ -42,6 +40,8 @@ func (t *Transformer) projectSingle(input meta.Row, predicates *[]parser.Express
 			return nil, err
 		}
 
+		// Here is the problem!
+		// Works for literals but does not for QualifiedColumn
 		val, ok := input[asNative.(string)]
 		if ok {
 			finalRow[asNative.(string)] = val
@@ -50,3 +50,7 @@ func (t *Transformer) projectSingle(input meta.Row, predicates *[]parser.Express
 
 	return finalRow, nil
 }
+
+// Okej czyli dla projection musimy mapowac wszystkie rows i wtedy for-loop na wszystkich expressions. Jesli znajdziemy value to dodajemy row a jesli nie znajdziemy i dostaniemy err to nie dodajemy.
+
+// Wowczas dla filterowania bedzie to dzialalo!

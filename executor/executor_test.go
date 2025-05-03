@@ -214,29 +214,17 @@ func TestSelectNestedLoopJoinAsSelect(t *testing.T) {
 				Kind: parser.BinaryKind,
 				BinaryExpression: &parser.BinaryExpression{
 					Left: &parser.Expression{
-						Kind: parser.QualifiedColumnKind,
-						QualifiedColumnExpression: &parser.QualifiedColumnExpression{
-							TableName: &parser.Expression{
-								Kind:                 parser.IdentifierKind,
-								IdentifierExpression: &lexer.Token{TokenType: lexer.STRING, Literal: "products"},
-							},
-							ColumnName: &parser.Expression{
-								Kind:                 parser.IdentifierKind,
-								IdentifierExpression: &lexer.Token{TokenType: lexer.STRING, Literal: "categoryid"},
-							},
+						Kind: parser.ColumnKind,
+						ColumnExpression: &parser.ColumnExpression{
+							TableName:  "products",
+							ColumnName: "categoryid",
 						},
 					},
 					Right: &parser.Expression{
-						Kind: parser.QualifiedColumnKind,
-						QualifiedColumnExpression: &parser.QualifiedColumnExpression{
-							TableName: &parser.Expression{
-								Kind:                 parser.IdentifierKind,
-								IdentifierExpression: &lexer.Token{TokenType: lexer.STRING, Literal: "categories"},
-							},
-							ColumnName: &parser.Expression{
-								Kind:                 parser.IdentifierKind,
-								IdentifierExpression: &lexer.Token{TokenType: lexer.STRING, Literal: "categoryid"},
-							},
+						Kind: parser.ColumnKind,
+						ColumnExpression: &parser.ColumnExpression{
+							TableName:  "categories",
+							ColumnName: "categoryid",
 						},
 					},
 					Operator: &lexer.Token{TokenType: lexer.EQUALS, Literal: "="},

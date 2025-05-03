@@ -9,16 +9,16 @@ type ExpressionKind uint
 
 const (
 	LiteralKind ExpressionKind = iota
-	QualifiedColumnKind
+	ColumnKind
 	IdentifierKind
 	BinaryKind
 )
 
 // A column reference, with optionally qualified with tableName.
 // eg. cars.car_id
-type QualifiedColumnExpression struct {
-	TableName  *Expression
-	ColumnName *Expression
+type ColumnExpression struct {
+	TableName  string
+	ColumnName string
 }
 
 type BinaryExpression struct {
@@ -37,11 +37,11 @@ const (
 
 // TODO: Refactor this into interfaces.
 type Expression struct {
-	LiteralExpression         *lexer.Token
-	QualifiedColumnExpression *QualifiedColumnExpression
-	IdentifierExpression      *lexer.Token
-	BinaryExpression          *BinaryExpression
-	Kind                      ExpressionKind
+	LiteralExpression    *lexer.Token
+	ColumnExpression     *ColumnExpression
+	IdentifierExpression *lexer.Token
+	BinaryExpression     *BinaryExpression
+	Kind                 ExpressionKind
 }
 
 func tokenToPrecedence(token lexer.Token) Precedence {
@@ -81,14 +81,6 @@ func (p *Parser) ParseExpression(precedence Precedence) (*Expression, error) {
 
 			var infix *Expression
 			switch p.currentToken.TokenType {
-			case lexer.DOT:
-				{
-					res, err := p.parseExpressionColumn2(prefix)
-					if err != nil {
-						return nil, fmt.Errorf("Err: %s", err.Error())
-					}
-					infix = res
-				}
 			case lexer.EQUALS:
 				{
 					res, err := p.parseExpressionInfixEqual(prefix)
@@ -129,24 +121,6 @@ func (p *Parser) parseExpressionInfixEqual(left *Expression) (*Expression, error
 	}, nil
 }
 
-func (p *Parser) parseExpressionColumn2(left *Expression) (*Expression, error) {
-	// Skip DOT
-	p.nextToken()
-
-	right, err := p.parseExpressionAtom()
-	if err != nil {
-		return nil, err
-	}
-
-	return &Expression{
-		Kind: QualifiedColumnKind,
-		QualifiedColumnExpression: &QualifiedColumnExpression{
-			TableName:  left,
-			ColumnName: right,
-		},
-	}, nil
-}
-
 func (p *Parser) parseBinaryExpression() (*Expression, error) {
 	left, err := p.parseExpressionAtom()
 	if err != nil {
@@ -171,58 +145,6 @@ func (p *Parser) parseBinaryExpression() (*Expression, error) {
 	}, nil
 }
 
-func (p *Parser) parseExpressionColumn() (*Expression, error) {
-	tableName, err := p.parseExpressionAtom()
-	if err != nil {
-		return nil, err
-	}
-
-	if !p.expectCurrToken(lexer.DOT) {
-		return nil, fmt.Errorf("Expected '.'")
-	}
-
-	// Skip DOT
-	p.nextToken()
-
-	columnName, err := p.parseExpressionAtom()
-	if err != nil {
-		return nil, err
-	}
-
-	return &Expression{
-		Kind: QualifiedColumnKind,
-		QualifiedColumnExpression: &QualifiedColumnExpression{
-			TableName:  tableName,
-			ColumnName: columnName,
-		},
-	}, nil
-}
-
-// NOTE: This is deprecated. Rewrite tests
-func (p *Parser) parseStringExpression() (*Expression, error) {
-	token := p.currentToken
-
-	p.nextToken()
-
-	return &Expression{
-		Kind:              LiteralKind,
-		LiteralExpression: &token,
-	}, nil
-}
-
-// NOTE: This is deprecated. Rewrite tests
-func (p *Parser) parseIdentifierExpression() (*Expression, error) {
-	token := p.currentToken
-
-	p.nextToken()
-
-	return &Expression{
-		Kind:                 IdentifierKind,
-		IdentifierExpression: &token,
-	}, nil
-}
-
-// NOTE: This is deprecated. Rewrite tests
 func (p *Parser) parseExpressionAtom() (*Expression, error) {
 	switch p.currentToken.TokenType {
 	case lexer.STRING:
@@ -238,10 +160,27 @@ func (p *Parser) parseExpressionAtom() (*Expression, error) {
 		{
 			token := p.currentToken
 
-			return &Expression{
-				Kind:                 IdentifierKind,
-				IdentifierExpression: &token,
-			}, nil
+			if p.expectPeekToken(lexer.DOT) {
+				p.nextToken()
+				p.nextToken()
+
+				return &Expression{
+					Kind: ColumnKind,
+					ColumnExpression: &ColumnExpression{
+						TableName:  token.Literal,
+						ColumnName: p.currentToken.Literal,
+					},
+				}, nil
+			} else {
+				return &Expression{
+					Kind: ColumnKind,
+					ColumnExpression: &ColumnExpression{
+						TableName: token.Literal,
+					},
+				}, nil
+
+			}
+
 		}
 	default:
 		{

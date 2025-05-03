@@ -22,36 +22,15 @@ func TestParseExpressionLiteral(t *testing.T) {
 	assert.Equal(t, expected, res)
 }
 
-func TestParseExpressionIdentifier(t *testing.T) {
-	lexer := l.NewLexer("someident")
-	parser := NewParser(*lexer)
-
-	expected := &Expression{
-		Kind:                 IdentifierKind,
-		IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "someident"},
-	}
-
-	res, err := parser.parseExpressionAtom()
-	assert.NoError(t, err)
-
-	assert.Equal(t, expected, res)
-}
-
 func TestParseExpressionWithColumns(t *testing.T) {
 	lexer := l.NewLexer("sometable.somecol")
 	parser := NewParser(*lexer)
 
 	expected := &Expression{
-		Kind: QualifiedColumnKind,
-		QualifiedColumnExpression: &QualifiedColumnExpression{
-			TableName: &Expression{
-				Kind:                 IdentifierKind,
-				IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "sometable"},
-			},
-			ColumnName: &Expression{
-				Kind:                 IdentifierKind,
-				IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "somecol"},
-			},
+		Kind: ColumnKind,
+		ColumnExpression: &ColumnExpression{
+			TableName:  "sometable",
+			ColumnName: "somecol",
 		},
 	}
 
@@ -69,29 +48,17 @@ func TestParseExpressionWithColumnsEqual(t *testing.T) {
 		Kind: BinaryKind,
 		BinaryExpression: &BinaryExpression{
 			Left: &Expression{
-				Kind: QualifiedColumnKind,
-				QualifiedColumnExpression: &QualifiedColumnExpression{
-					TableName: &Expression{
-						Kind:                 IdentifierKind,
-						IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "sometable"},
-					},
-					ColumnName: &Expression{
-						Kind:                 IdentifierKind,
-						IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "somecol"},
-					},
+				Kind: ColumnKind,
+				ColumnExpression: &ColumnExpression{
+					TableName:  "sometable",
+					ColumnName: "somecol",
 				},
 			},
 			Right: &Expression{
-				Kind: QualifiedColumnKind,
-				QualifiedColumnExpression: &QualifiedColumnExpression{
-					TableName: &Expression{
-						Kind:                 IdentifierKind,
-						IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "othertable"},
-					},
-					ColumnName: &Expression{
-						Kind:                 IdentifierKind,
-						IdentifierExpression: &l.Token{TokenType: l.IDENTIFIER, Literal: "othercol"},
-					},
+				Kind: ColumnKind,
+				ColumnExpression: &ColumnExpression{
+					TableName:  "othertable",
+					ColumnName: "othercol",
 				},
 			},
 			Operator: &l.Token{TokenType: l.EQUALS, Literal: "="},

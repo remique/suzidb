@@ -2,6 +2,7 @@ package planner
 
 import (
 	"fmt"
+	"reflect"
 
 	l "example.com/suzidb/lexer"
 	m "example.com/suzidb/meta"
@@ -110,6 +111,14 @@ func (pl *Planner) buildSelect(stmt p.Statement) (Plan, error) {
 	node, err := nb.BuildNode(stmt.SelectStatement.From)
 	if err != nil {
 		return nil, err
+	}
+
+	// Here we can build projection if it exists
+	if !reflect.DeepEqual(stmt.SelectStatement.SelectItems, &[]p.Expression{{Kind: p.AllColumnsKind, AllColumnsExpression: &p.AllExpression{}}}) {
+		node, err = nb.AddNodeProjection(node, stmt)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &SelectPlan{Node: node}, nil

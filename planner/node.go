@@ -17,13 +17,15 @@ type NodeQuery interface {
 	NodeQuery()
 }
 
-// Scan performs a basic scan of a Table. Currently, filtering out
-// specific rows is not supported (eg. 'WHERE x > 5'), since we do not have
-// proper expression parsing.
+// Scan performs a basic scan of a Table.
 type NodeScan struct {
 	Table meta.Table
+}
 
-	// filter: parser.Expression
+// Projection filters out columns that need to be queried.
+type NodeProjection struct {
+	Source      NodeQuery
+	Expressions *[]parser.Expression
 }
 
 // TODO: Add support for building an actual plan.
@@ -31,12 +33,6 @@ type NestedLoopJoin struct {
 	Left      NodeQuery
 	Right     NodeQuery
 	Predicate *parser.Expression
-}
-
-// Projection filters out columns that need to be queried.
-type NodeProjection struct {
-	Source  NodeQuery
-	Columns []meta.Column
 }
 
 // NodeQuery marker trait implementations
@@ -90,15 +86,12 @@ func (nb *NodeBuilder) buildNodeScan(tableFrom *parser.TableFrom) (NodeQuery, er
 	return &NodeScan{Table: *table}, nil
 }
 
-// func (nb *NodeBuilder) buildNodeProjection(statement parser.Statement) (NodeQuery, error) {
-// 	// Build source
-//      // source := buildNodeScan()
-//      // columns: Get columns from statement
-
-//      return &NodeProjection{...}
-
-// 	return &NodeScan{Table: *table}, nil
-// }
+func (nb *NodeBuilder) AddNodeProjection(source NodeQuery, statement parser.Statement) (NodeQuery, error) {
+	return &NodeProjection{
+		Source:      source,
+		Expressions: statement.SelectStatement.SelectItems,
+	}, nil
+}
 
 func isAsteriskOnly(selectItems *[]lexer.Token) bool {
 	if len(*selectItems) == 1 && (*selectItems)[0].TokenType == lexer.STAR {

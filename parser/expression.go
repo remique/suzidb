@@ -11,6 +11,7 @@ const (
 	LiteralKind ExpressionKind = iota
 	ColumnKind
 	BinaryKind
+	AllColumnsKind
 )
 
 // A column reference, with optionally qualified with tableName.
@@ -26,6 +27,10 @@ type BinaryExpression struct {
 	Operator *lexer.Token
 }
 
+// This structure does not contain anything, as it is only a marker
+// that we want to query all columns returned.
+type AllExpression struct{}
+
 type Precedence uint
 
 const (
@@ -36,10 +41,11 @@ const (
 
 // TODO: Refactor this into interfaces.
 type Expression struct {
-	LiteralExpression *lexer.Token
-	ColumnExpression  *ColumnExpression
-	BinaryExpression  *BinaryExpression
-	Kind              ExpressionKind
+	LiteralExpression    *lexer.Token
+	AllColumnsExpression *AllExpression
+	ColumnExpression     *ColumnExpression
+	BinaryExpression     *BinaryExpression
+	Kind                 ExpressionKind
 }
 
 func tokenToPrecedence(token lexer.Token) Precedence {
@@ -179,6 +185,13 @@ func (p *Parser) parseExpressionAtom() (*Expression, error) {
 
 			}
 
+		}
+	case lexer.STAR:
+		{
+			return &Expression{
+				Kind:                 AllColumnsKind,
+				AllColumnsExpression: &AllExpression{},
+			}, nil
 		}
 	default:
 		{

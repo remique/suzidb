@@ -70,3 +70,18 @@ func TestParseExpressionWithColumnsEqual(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expected, res)
 }
+
+func TestParseExpressionAllColumns(t *testing.T) {
+	lexer := l.NewLexer("*")
+	parser := NewParser(*lexer)
+
+	expected := &Expression{
+		Kind:                 AllColumnsKind,
+		AllColumnsExpression: &AllExpression{},
+	}
+
+	res, err := parser.ParseExpression(LowestPrecedence)
+
+	assert.NoError(t, err)
+	assert.Equal(t, expected, res)
+}

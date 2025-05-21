@@ -67,7 +67,6 @@ func (ee *ExpressionEvaluator) evaluateBinaryExpr() (Value, error) {
 func (ee *ExpressionEvaluator) evaluateColumn(row meta.Row) (Value, error) {
 	keyStr := ee.expr.ColumnExpression.TableName
 	if ee.expr.ColumnExpression.ColumnName != "" {
-		fmt.Println("Column: ", ee.expr.ColumnExpression.ColumnName)
 		keyStr = strings.Join(
 			[]string{
 				ee.expr.ColumnExpression.

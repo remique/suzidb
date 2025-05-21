@@ -282,3 +282,143 @@ func TestSelectNestedLoopJoinAsSelect(t *testing.T) {
 	assert.ElementsMatch(t, expected.Rows, res.(*SelectResult).Rows)
 	assert.ElementsMatch(t, expected.Columns, res.(*SelectResult).Columns)
 }
+
+func TestSelectNestedLoopJoinAsSelectWithProjection(t *testing.T) {
+	s := storage.NewMemStorage()
+	sm := storage.NewSchemaManager(s)
+	e := NewExecutor(s, sm)
+
+	productTable := meta.Table{
+		Name:       "products",
+		PrimaryKey: "productid",
+		Columns: []meta.Column{
+			{Name: "productid", Type: meta.IntType},
+			{Name: "productname", Type: meta.StringType},
+			{Name: "categoryid", Type: meta.StringType},
+		},
+	}
+
+	categoriesTable := meta.Table{
+		Name:       "categories",
+		PrimaryKey: "categoryid",
+		Columns: []meta.Column{
+			{Name: "categoryid", Type: meta.StringType},
+			{Name: "categoryname", Type: meta.StringType},
+		},
+	}
+
+	nodeInput := planner.SelectPlan{
+		Node: &planner.NodeProjection{
+			Source: &planner.NestedLoopJoin{
+				Left: &planner.NodeScan{
+					Table: productTable,
+				},
+				Right: &planner.NodeScan{
+					Table: categoriesTable,
+				},
+				Predicate: &parser.Expression{
+					Kind: parser.BinaryKind,
+					BinaryExpression: &parser.BinaryExpression{
+						Left: &parser.Expression{
+							Kind: parser.ColumnKind,
+							ColumnExpression: &parser.ColumnExpression{
+								TableName:  "products",
+								ColumnName: "categoryid",
+							},
+						},
+						Right: &parser.Expression{
+							Kind: parser.ColumnKind,
+							ColumnExpression: &parser.ColumnExpression{
+								TableName:  "categories",
+								ColumnName: "categoryid",
+							},
+						},
+						Operator: &lexer.Token{TokenType: lexer.EQUALS, Literal: "="},
+					},
+				},
+			},
+
+			Expressions: &[]parser.Expression{
+				parser.Expression{
+					Kind: parser.ColumnKind,
+					ColumnExpression: &parser.ColumnExpression{
+						TableName:  "products",
+						ColumnName: "productname",
+					},
+				},
+				parser.Expression{
+					Kind: parser.ColumnKind,
+					ColumnExpression: &parser.ColumnExpression{
+						TableName:  "categories",
+						ColumnName: "categoryname",
+					},
+				},
+			},
+		},
+	}
+
+	create1Plan := planner.CreateTablePlan{
+		Table: productTable,
+	}
+
+	create2Plan := planner.CreateTablePlan{
+		Table: categoriesTable,
+	}
+
+	insert1plan := planner.InsertPlan{
+		Table: productTable,
+		Row:   meta.Row{"productid": 1, "productname": "oliveoil", "categoryid": "1"},
+	}
+
+	insert2plan := planner.InsertPlan{
+		Table: categoriesTable,
+		Row:   meta.Row{"categoryid": "1", "categoryname": "oils"},
+	}
+
+	insert3plan := planner.InsertPlan{
+		Table: productTable,
+		Row:   meta.Row{"productid": 2, "productname": "shampoo", "categoryid": "2"},
+	}
+
+	insert4plan := planner.InsertPlan{
+		Table: categoriesTable,
+		Row:   meta.Row{"categoryid": "2", "categoryname": "hair"},
+	}
+
+	_, err := e.executeCreateTable(create1Plan)
+	assert.NoError(t, err)
+
+	_, err = e.executeCreateTable(create2Plan)
+	assert.NoError(t, err)
+
+	_, err = e.executeInsert(insert1plan)
+	assert.NoError(t, err)
+
+	_, err = e.executeInsert(insert2plan)
+	assert.NoError(t, err)
+
+	_, err = e.executeInsert(insert3plan)
+	assert.NoError(t, err)
+
+	_, err = e.executeInsert(insert4plan)
+	assert.NoError(t, err)
+
+	expected := &SelectResult{
+		Rows: []meta.Row{
+			{
+				"products.productname":    "oliveoil",
+				"categories.categoryname": "oils",
+			},
+			{
+				"products.productname":    "shampoo",
+				"categories.categoryname": "hair",
+			},
+		},
+		Columns: []meta.Column{},
+	}
+
+	res, err := e.executeSelect(nodeInput)
+	assert.NoError(t, err)
+	assert.ElementsMatch(t, expected.Rows, res.(*SelectResult).Rows)
+	assert.ElementsMatch(t, expected.Columns, res.(*SelectResult).Columns)
+}

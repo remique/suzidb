@@ -3,7 +3,6 @@ package executor
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	m "example.com/suzidb/meta"
 	p "example.com/suzidb/planner"
@@ -89,28 +88,9 @@ func (e *Executor) executeSelect(selectPlan p.SelectPlan) (ExecutionResult, erro
 		return &SelectResult{Rows: rows, Columns: n.Table.Columns}, nil
 	case *p.NestedLoopJoin:
 		return &SelectResult{Rows: rows, Columns: []m.Column{}}, nil
+	case *p.NodeProjection:
+		return &SelectResult{Rows: rows, Columns: []m.Column{}}, nil
 	default:
 		return &SelectResult{Rows: rows, Columns: []m.Column{}}, nil
 	}
-}
-
-func (e *Executor) executeNodeScan(node p.NodeScan) (ExecutionResult, error) {
-	var rows []m.Row
-
-	allKeys := e.Storage.ScanKeys()
-	for _, key := range allKeys {
-		if strings.Contains(key, node.Table.Name) && !strings.Contains(key, "meta") {
-			res := e.Storage.Get(key)
-
-			var row m.Row
-			err := json.Unmarshal([]byte(res), &row)
-			if err != nil {
-				return nil, err
-			}
-
-			rows = append(rows, row)
-		}
-	}
-
-	return &SelectResult{Rows: rows, Columns: node.Table.Columns}, nil
 }

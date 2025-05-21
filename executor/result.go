@@ -38,6 +38,16 @@ type ScanExecutor struct {
 	cursor int
 }
 
+type ProjectionExecutor struct {
+	Storage storage.Storage
+	Catalog storage.Catalog
+
+	Exec    QueryExecutor
+	Columns *[]parser.Expression
+
+	cursor int
+}
+
 type NestedLoopJoinExecutor struct {
 	Storage storage.Storage
 	Catalog storage.Catalog
@@ -48,6 +58,16 @@ type NestedLoopJoinExecutor struct {
 	Predicate *parser.Expression
 
 	cursor int
+}
+
+func NewProjectionExecutor(s storage.Storage, c storage.Catalog, exec QueryExecutor, cols *[]parser.Expression) *ProjectionExecutor {
+	return &ProjectionExecutor{
+		Storage: s,
+		Catalog: c,
+		Exec:    exec,
+		Columns: cols,
+		cursor:  0,
+	}
 }
 
 func NewScanExecutor(s storage.Storage, c storage.Catalog, table meta.Table) *ScanExecutor {
@@ -138,11 +158,34 @@ func (se *ScanExecutor) Next() (*meta.Row, error) {
 	return nil, fmt.Errorf("Cursor out of bounds")
 }
 
+func (pe *ProjectionExecutor) Next() (*meta.Row, error) {
+	row, err := pe.Exec.Next()
+	if err != nil {
+		return nil, err
+	}
+
+	projected, err := NewTransformer().ProjectSingle(*row, pe.Columns)
+	if err != nil {
+		return nil, err
+	}
+
+	return &projected, nil
+}
+
 func (e *Executor) queryExecutorBuilder(node planner.NodeQuery) (QueryExecutor, error) {
 	switch n := node.(type) {
 	case *planner.NodeScan:
 		{
 			return NewScanExecutor(e.Storage, e.Catalog, n.Table), nil
+		}
+	case *planner.NodeProjection:
+		{
+			exec, err := e.queryExecutorBuilder(n.Source)
+			if err != nil {
+				return nil, err
+			}
+
+			return NewProjectionExecutor(e.Storage, e.Catalog, exec, n.Expressions), nil
 		}
 	case *planner.NestedLoopJoin:
 		{

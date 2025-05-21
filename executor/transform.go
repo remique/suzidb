@@ -16,7 +16,7 @@ func NewTransformer() *Transformer {
 func (t *Transformer) Project(input []meta.Row, predicates *[]parser.Expression) ([]meta.Row, error) {
 	var finalRows []meta.Row
 	for _, row := range input {
-		res, err := t.projectSingle(row, predicates)
+		res, err := t.ProjectSingle(row, predicates)
 		if err != nil {
 			return nil, err
 		}
@@ -27,7 +27,7 @@ func (t *Transformer) Project(input []meta.Row, predicates *[]parser.Expression)
 	return finalRows, nil
 }
 
-func (t *Transformer) projectSingle(input meta.Row, predicates *[]parser.Expression) (meta.Row, error) {
+func (t *Transformer) ProjectSingle(input meta.Row, predicates *[]parser.Expression) (meta.Row, error) {
 	finalRow := make(meta.Row)
 	for _, predicate := range *predicates {
 		evaluated, err := evaluator.NewEval(&predicate).

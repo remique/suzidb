@@ -85,3 +85,39 @@ func TestParseExpressionAllColumns(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expected, res)
 }
+
+func TestParseExpressionNull(t *testing.T) {
+	lexer := l.NewLexer("null")
+	parser := NewParser(*lexer)
+
+	expected := &Expression{
+		Kind: ConstExprKind,
+		ConstExpression: &ConstExpression{
+			Kind: NullKind,
+			Null: &l.Token{TokenType: l.NULL, Literal: "null"},
+		},
+	}
+
+	res, err := parser.ParseExpression(LowestPrecedence)
+
+	assert.NoError(t, err)
+	assert.Equal(t, expected, res)
+}
+
+func TestParseExpressionInt(t *testing.T) {
+	lexer := l.NewLexer("5")
+	parser := NewParser(*lexer)
+
+	expected := &Expression{
+		Kind: ConstExprKind,
+		ConstExpression: &ConstExpression{
+			Kind: IntKind,
+			Int:  &l.Token{TokenType: l.INT, Literal: "5"},
+		},
+	}
+
+	res, err := parser.ParseExpression(LowestPrecedence)
+
+	assert.NoError(t, err)
+	assert.Equal(t, expected, res)
+}

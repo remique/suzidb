@@ -11,6 +11,7 @@ const (
 	LiteralKind ExpressionKind = iota
 	ColumnKind
 	BinaryKind
+	ConstExprKind
 	AllColumnsKind
 )
 
@@ -42,10 +43,26 @@ const (
 // TODO: Refactor this into interfaces.
 type Expression struct {
 	LiteralExpression    *lexer.Token
+	ConstExpression      *ConstExpression
 	AllColumnsExpression *AllExpression
 	ColumnExpression     *ColumnExpression
 	BinaryExpression     *BinaryExpression
 	Kind                 ExpressionKind
+}
+
+type ConstKind uint
+
+const (
+	IntKind ConstKind = iota
+	StringKind
+	NullKind
+)
+
+type ConstExpression struct {
+	Int    *lexer.Token
+	String *lexer.Token
+	Null   *lexer.Token
+	Kind   ConstKind
 }
 
 func tokenToPrecedence(token lexer.Token) Precedence {
@@ -151,6 +168,30 @@ func (p *Parser) parseBinaryExpression() (*Expression, error) {
 
 func (p *Parser) parseExpressionAtom() (*Expression, error) {
 	switch p.currentToken.TokenType {
+	case lexer.NULL:
+		{
+			token := p.currentToken
+
+			return &Expression{
+				Kind: ConstExprKind,
+				ConstExpression: &ConstExpression{
+					Null: &token,
+					Kind: NullKind,
+				},
+			}, nil
+		}
+	case lexer.INT:
+		{
+			token := p.currentToken
+
+			return &Expression{
+				Kind: ConstExprKind,
+				ConstExpression: &ConstExpression{
+					Int:  &token,
+					Kind: IntKind,
+				},
+			}, nil
+		}
 	case lexer.STRING:
 		{
 			token := p.currentToken

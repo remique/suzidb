@@ -53,7 +53,7 @@ func TestNextToken2(t *testing.T) {
 }
 
 func TestNextToken(t *testing.T) {
-	lexer := NewLexer("+=abc def select inSerT")
+	lexer := NewLexer("+=abc def select inSerT null")
 
 	tests := []struct {
 		expectedToken Token
@@ -64,6 +64,7 @@ func TestNextToken(t *testing.T) {
 		{expectedToken: NewToken(IDENTIFIER, "def")},
 		{expectedToken: NewToken(SELECT, "select")},
 		{expectedToken: NewToken(INSERT, "insert")},
+		{expectedToken: NewToken(NULL, "null")},
 	}
 
 	for _, test := range tests {

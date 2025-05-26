@@ -132,6 +132,37 @@ func TestParseInsertParseValues(t *testing.T) {
 	assert.Equal(t, expected, vals, "Insert values should be the same")
 }
 
+func TestParseInsertParseValues2(t *testing.T) {
+	// lexer := l.NewLexer("'john', 'smith', 1, NULL")
+	lexer := l.NewLexer("'john', 3, null")
+	parser := NewParser(*lexer)
+
+	expected := []Expression{
+		{
+			Kind:              LiteralKind,
+			LiteralExpression: &l.Token{TokenType: l.STRING, Literal: "john"},
+		},
+		{
+			Kind: ConstExprKind,
+			ConstExpression: &ConstExpression{
+				Kind: IntKind,
+				Int:  &l.Token{TokenType: l.INT, Literal: "3"},
+			},
+		},
+		{
+			Kind: ConstExprKind,
+			ConstExpression: &ConstExpression{
+				Kind: NullKind,
+				Null: &l.Token{TokenType: l.NULL, Literal: "null"},
+			},
+		},
+	}
+
+	vals, err := parser.parseInsertValues2()
+	assert.NoError(t, err)
+	assert.Equal(t, &expected, vals, "Insert values should be the same")
+}
+
 func TestParseInsertStatementWithCustomCols(t *testing.T) {
 	lexer := l.NewLexer("insert into mytable(id, name, surname) values (1, 'john', 'smith');")
 	parser := NewParser(*lexer)

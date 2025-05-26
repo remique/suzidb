@@ -169,6 +169,33 @@ func (p *Parser) parseInsertValues() ([]l.Token, error) {
 	return vals, nil
 }
 
+func (p *Parser) parseInsertValues2() (*[]Expression, error) {
+	var vals []Expression
+
+	for {
+		expr, err := p.ParseExpression(LowestPrecedence)
+		if err != nil {
+			return nil, err
+		}
+
+		fmt.Println("Got expr", expr.Kind)
+
+		vals = append(vals, *expr)
+
+		if !p.expectPeekToken(l.COMMA) {
+			break
+		}
+
+		// Skip ','
+		p.nextToken()
+
+		// Fetch next TYPE
+		p.nextToken()
+	}
+
+	return &vals, nil
+}
+
 func (p *Parser) parseCreateTableStatement() (*Statement, error) {
 	// Consume 'CREATE' and 'TABLE'
 	p.nextToken()

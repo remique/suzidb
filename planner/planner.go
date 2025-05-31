@@ -64,22 +64,27 @@ func (pl *Planner) buildInsert(stmt p.Statement) (Plan, error) {
 		return nil, fmt.Errorf("Table %s does not exist", tableName)
 	}
 
-	if len(stmt.InsertStatement.CustomColumns) != len(stmt.InsertStatement.Values) &&
+	if len(stmt.InsertStatement.CustomColumns) != len(*stmt.InsertStatement.Values) &&
 		len(stmt.InsertStatement.CustomColumns) > 0 {
 		return nil, fmt.Errorf("Got %d columns and %d values",
-			len(stmt.InsertStatement.CustomColumns), len(stmt.InsertStatement.Values))
+			len(stmt.InsertStatement.CustomColumns), len(*stmt.InsertStatement.Values))
 	}
 
 	// TODO: Refactor this
 	if len(stmt.InsertStatement.CustomColumns) == 0 {
 		for i, c := range table.Columns {
 			// Check the type
-			currTok := stmt.InsertStatement.Values[i]
-			if c.Type != tokenToColumnType(currTok) {
-				return nil, fmt.Errorf("Expected %d, got %d", c.Type, tokenToColumnType(currTok))
+			currExpr := (*stmt.InsertStatement.Values)[i]
+			if c.Type != exprToColumnType(&currExpr) {
+				return nil, fmt.Errorf("Expected %d, got %d", c.Type, exprToColumnType(&currExpr))
 			}
 
-			row[c.Name] = currTok.Literal
+			toToken, err := exprToToken(&currExpr)
+			if err != nil {
+				return nil, fmt.Errorf("Error toToken")
+			}
+
+			row[c.Name] = toToken.Literal
 		}
 	} else {
 		for _, c := range table.Columns {
@@ -92,12 +97,17 @@ func (pl *Planner) buildInsert(stmt p.Statement) (Plan, error) {
 					return nil, fmt.Errorf("Error while getting column")
 				}
 			} else {
-				currTok := stmt.InsertStatement.Values[idx]
-				if c.Type != tokenToColumnType(currTok) {
-					return nil, fmt.Errorf("Expected %d, got %d", c.Type, tokenToColumnType(currTok))
+				currExpr := (*stmt.InsertStatement.Values)[idx]
+				if c.Type != exprToColumnType(&currExpr) {
+					return nil, fmt.Errorf("Expected %d, got %d", c.Type, exprToColumnType(&currExpr))
 				}
 
-				row[c.Name] = currTok.Literal
+				toToken, err := exprToToken(&currExpr)
+				if err != nil {
+					return nil, fmt.Errorf("Error toToken")
+				}
+
+				row[c.Name] = toToken.Literal
 			}
 		}
 	}
@@ -134,19 +144,62 @@ func getColumnIndex(slice []l.Token, columnName string) int {
 	return -1
 }
 
-func tokenToColumnType(token l.Token) m.ColumnType {
-	// NOTE(remique): We need to clean the types and define them
-	// more thoroughly.
-	switch token.TokenType {
-	case l.STRING:
+// func tokenToColumnType(token l.Token) m.ColumnType {
+// 	// NOTE(remique): We need to clean the types and define them
+// 	// more thoroughly.
+// 	switch token.TokenType {
+// 	case l.STRING:
+// 		return m.StringType
+// 	case l.INT:
+// 		return m.IntType
+// 	case l.TEXT_TYPE:
+// 		return m.StringType
+// 	case l.INT_TYPE:
+// 		return m.IntType
+// 	default:
+// 		return -1
+// 	}
+// }
+
+func exprToColumnType(expr *p.Expression) m.ColumnType {
+
+	switch expr.Kind {
+	case p.LiteralKind:
 		return m.StringType
-	case l.INT:
-		return m.IntType
-	case l.TEXT_TYPE:
-		return m.StringType
-	case l.INT_TYPE:
-		return m.IntType
+	case p.ConstExprKind:
+		{
+			switch expr.ConstExpression.Kind {
+			case p.IntKind:
+				return m.IntType
+			case p.StringKind:
+				return m.StringType
+			default:
+				return -1
+			}
+		}
 	default:
 		return -1
+	}
+}
+
+func exprToToken(expr *p.Expression) (*l.Token, error) {
+	switch expr.Kind {
+	case p.LiteralKind:
+		{
+			return expr.LiteralExpression, nil
+		}
+	case p.ConstExprKind:
+		{
+			switch expr.ConstExpression.Kind {
+			case p.IntKind:
+				return expr.ConstExpression.Int, nil
+			default:
+				return nil, fmt.Errorf("Unsupported ConstExpr")
+			}
+		}
+	default:
+		{
+			return nil, fmt.Errorf("Unsupported Expression")
+		}
 	}
 }

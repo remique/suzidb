@@ -97,7 +97,22 @@ func TestBuildInsertPlan(t *testing.T) {
 		Kind: p.InsertKind,
 		InsertStatement: &p.InsertStatement{
 			TableName: "mytable",
-			Values:    []l.Token{l.NewToken(l.INT_TYPE, "10"), l.NewToken(l.TEXT_TYPE, "john")},
+			Values: &[]p.Expression{
+				{
+					Kind: p.ConstExprKind,
+					ConstExpression: &p.ConstExpression{
+						Kind: p.IntKind,
+						Int:  &l.Token{TokenType: l.INT_TYPE, Literal: "10"},
+					},
+				},
+				{
+					Kind: p.LiteralKind,
+					LiteralExpression: &l.Token{
+						TokenType: l.TEXT_TYPE,
+						Literal:   "john",
+					},
+				},
+			},
 		},
 	}
 
@@ -138,7 +153,22 @@ func TestBuildInsertPlanCustomCols(t *testing.T) {
 		InsertStatement: &p.InsertStatement{
 			TableName:     "mytable",
 			CustomColumns: []l.Token{l.NewToken(l.IDENTIFIER, "name"), l.NewToken(l.IDENTIFIER, "id")},
-			Values:        []l.Token{l.NewToken(l.TEXT_TYPE, "john"), l.NewToken(l.INT_TYPE, "10")},
+			Values: &[]p.Expression{
+				{
+					Kind: p.LiteralKind,
+					LiteralExpression: &l.Token{
+						TokenType: l.TEXT_TYPE,
+						Literal:   "john",
+					},
+				},
+				{
+					Kind: p.ConstExprKind,
+					ConstExpression: &p.ConstExpression{
+						Kind: p.IntKind,
+						Int:  &l.Token{TokenType: l.INT_TYPE, Literal: "10"},
+					},
+				},
+			},
 		},
 	}
 
@@ -179,7 +209,15 @@ func TestBuildInsertPlanCustomColsWithNullable(t *testing.T) {
 		InsertStatement: &p.InsertStatement{
 			TableName:     "mytable",
 			CustomColumns: []l.Token{l.NewToken(l.IDENTIFIER, "id")},
-			Values:        []l.Token{l.NewToken(l.INT_TYPE, "10")},
+			Values: &[]p.Expression{
+				{
+					Kind: p.ConstExprKind,
+					ConstExpression: &p.ConstExpression{
+						Kind: p.IntKind,
+						Int:  &l.Token{TokenType: l.INT_TYPE, Literal: "10"},
+					},
+				},
+			},
 		},
 	}
 

@@ -130,8 +130,8 @@ func (p *Parser) parseInsertStatement() (*Statement, error) {
 		Values:        values,
 	}
 
-	if len(cols) > 0 && len(cols) != len(values) {
-		return nil, fmt.Errorf("Got %d columns and %d values", len(cols), len(values))
+	if len(cols) > 0 && len(cols) != len(*values) {
+		return nil, fmt.Errorf("Got %d columns and %d values", len(cols), len(*values))
 	}
 
 	return &Statement{InsertStatement: &insertStmt, Kind: InsertKind}, nil
@@ -153,23 +153,7 @@ func (p *Parser) parseInsertColumnList() ([]l.Token, error) {
 	return columns, nil
 }
 
-func (p *Parser) parseInsertValues() ([]l.Token, error) {
-	var vals []l.Token
-
-	for p.expectCurrToken(l.INT) || p.expectCurrToken(l.STRING) {
-		vals = append(vals, p.currentToken)
-
-		// Skip ','
-		p.nextToken()
-
-		// Fetch next TYPE
-		p.nextToken()
-	}
-
-	return vals, nil
-}
-
-func (p *Parser) parseInsertValues2() (*[]Expression, error) {
+func (p *Parser) parseInsertValues() (*[]Expression, error) {
 	var vals []Expression
 
 	for {

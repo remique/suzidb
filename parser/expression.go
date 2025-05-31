@@ -59,10 +59,9 @@ const (
 )
 
 type ConstExpression struct {
-	Int    *lexer.Token
-	String *lexer.Token
-	Null   *lexer.Token
-	Kind   ConstKind
+	Int  *lexer.Token
+	Null *lexer.Token
+	Kind ConstKind
 }
 
 func tokenToPrecedence(token lexer.Token) Precedence {

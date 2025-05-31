@@ -52,7 +52,27 @@ func (ee *ExpressionEvaluator) evaluateBinaryExpr() (Value, error) {
 	switch ee.expr.BinaryExpression.Operator.Literal {
 	case "=":
 		{
-			res := left.(*LiteralValue).Value == right.(*LiteralValue).Value
+			var res bool
+			if left.Type() == "literal" && right.Type() == "literal" {
+				res = left.(*LiteralValue).Value == right.(*LiteralValue).Value
+			} else {
+				return nil, fmt.Errorf("Unable to compare %s and %s", left.Type(), right.Type())
+			}
+
+			return &BooleanValue{
+				Value: res,
+			}, nil
+		}
+	case ">":
+		{
+			var res bool
+			if left.Type() == "literal" && right.Type() == "literal" {
+				res = left.(*LiteralValue).Value > right.(*LiteralValue).Value
+			} else if left.Type() == "int" && right.Type() == "int" {
+				res = left.(*IntValue).Value > right.(*IntValue).Value
+			} else {
+				return nil, fmt.Errorf("Unable to compare %s and %s", left.Type(), right.Type())
+			}
 			return &BooleanValue{
 				Value: res,
 			}, nil

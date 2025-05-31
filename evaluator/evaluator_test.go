@@ -168,6 +168,43 @@ func TestEvalBinaryColumnExpr(t *testing.T) {
 	assert.Equal(t, expected, res)
 }
 
+// TODO
+// func TestEvalBinaryColumnExprIntLess(t *testing.T) {
+// 	expr := &parser.Expression{
+// 		Kind: parser.BinaryKind,
+// 		BinaryExpression: &parser.BinaryExpression{
+// 			Left: &parser.Expression{
+// 				Kind: parser.ColumnKind,
+// 				ColumnExpression: &parser.ColumnExpression{
+// 					TableName:  "tbl1",
+// 					ColumnName: "col",
+// 				},
+// 			},
+// 			Right: &parser.Expression{
+// 				Kind: parser.ColumnKind,
+// 				ColumnExpression: &parser.ColumnExpression{
+// 					TableName:  "tbl2",
+// 					ColumnName: "col",
+// 				},
+// 			},
+// 			Operator: &lexer.Token{TokenType: lexer.GREATER, Literal: ">"},
+// 		},
+// 	}
+
+// 	row := map[string]interface{}{
+// 		"tbl1.col":  "hello",
+// 		"tbl1.col2": 1,
+// 		"tbl2.col":  "hello",
+// 		"tbl2.col2": 2,
+// 	}
+
+// 	expected := &BooleanValue{Value: true}
+// 	res, err := NewEval(expr).Evaluate(WithRow(row))
+
+// 	assert.NoError(t, err)
+// 	assert.Equal(t, expected, res)
+// }
+
 func TestValueToNative(t *testing.T) {
 	inputs := []struct {
 		val      Value

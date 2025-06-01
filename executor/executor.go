@@ -41,26 +41,31 @@ func (e *Executor) executeCreateTable(createTablePlan p.CreateTablePlan) (Execut
 }
 
 func (e *Executor) executeInsert(insertPlan p.InsertPlan) (ExecutionResult, error) {
-	// Check if already exists
-	key := fmt.Sprintf("%s:%s", insertPlan.Table.Name, insertPlan.Row[insertPlan.Table.PrimaryKey])
-	checkIfExists := e.Storage.Get(key)
-	if len(checkIfExists) > 0 {
-		return nil, fmt.Errorf("UNIQUE constraint failed: %s",
-			insertPlan.Row[insertPlan.Table.PrimaryKey])
-	}
+	count := 0
+	for _, row := range insertPlan.Rows {
+		// Check if already exists
+		key := fmt.Sprintf("%s:%s", insertPlan.Table.Name, row[insertPlan.Table.PrimaryKey])
+		checkIfExists := e.Storage.Get(key)
+		if len(checkIfExists) > 0 {
+			return nil, fmt.Errorf("UNIQUE constraint failed: %s",
+				row[insertPlan.Table.PrimaryKey])
+		}
 
-	serializedRow, err := json.Marshal(insertPlan.Row)
-	if err != nil {
-		return nil, err
-	}
+		serializedRow, err := json.Marshal(row)
+		if err != nil {
+			return nil, err
+		}
 
-	err = e.Storage.Set(key, string(serializedRow))
-	if err != nil {
-		return nil, err
+		err = e.Storage.Set(key, string(serializedRow))
+		if err != nil {
+			return nil, err
+		}
+
+		count++
 	}
 
 	// Hardcoded for now, as we can insert only one row
-	return &InsertResult{Count: 1}, nil
+	return &InsertResult{Count: count}, nil
 }
 
 func (e *Executor) executeSelect(selectPlan p.SelectPlan) (ExecutionResult, error) {

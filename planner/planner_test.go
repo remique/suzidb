@@ -1,6 +1,7 @@
 package planner
 
 import (
+	"fmt"
 	"testing"
 
 	l "example.com/suzidb/lexer"
@@ -97,19 +98,21 @@ func TestBuildInsertPlan(t *testing.T) {
 		Kind: p.InsertKind,
 		InsertStatement: &p.InsertStatement{
 			TableName: "mytable",
-			Values: &[]p.Expression{
+			Values: &[][]p.Expression{
 				{
-					Kind: p.ConstExprKind,
-					ConstExpression: &p.ConstExpression{
-						Kind: p.IntKind,
-						Int:  &l.Token{TokenType: l.INT_TYPE, Literal: "10"},
+					{
+						Kind: p.ConstExprKind,
+						ConstExpression: &p.ConstExpression{
+							Kind: p.IntKind,
+							Int:  &l.Token{TokenType: l.INT_TYPE, Literal: "10"},
+						},
 					},
-				},
-				{
-					Kind: p.LiteralKind,
-					LiteralExpression: &l.Token{
-						TokenType: l.TEXT_TYPE,
-						Literal:   "john",
+					{
+						Kind: p.LiteralKind,
+						LiteralExpression: &l.Token{
+							TokenType: l.TEXT_TYPE,
+							Literal:   "john",
+						},
 					},
 				},
 			},
@@ -125,7 +128,7 @@ func TestBuildInsertPlan(t *testing.T) {
 				{Name: "name", Type: m.StringType},
 			},
 		},
-		Row: m.Row{"id": "10", "name": "john"},
+		Rows: []m.Row{{"id": "10", "name": "john"}},
 	}
 
 	plan, err := planner.buildInsert(stmt)
@@ -153,19 +156,21 @@ func TestBuildInsertPlanCustomCols(t *testing.T) {
 		InsertStatement: &p.InsertStatement{
 			TableName:     "mytable",
 			CustomColumns: []l.Token{l.NewToken(l.IDENTIFIER, "name"), l.NewToken(l.IDENTIFIER, "id")},
-			Values: &[]p.Expression{
+			Values: &[][]p.Expression{
 				{
-					Kind: p.LiteralKind,
-					LiteralExpression: &l.Token{
-						TokenType: l.TEXT_TYPE,
-						Literal:   "john",
+					{
+						Kind: p.LiteralKind,
+						LiteralExpression: &l.Token{
+							TokenType: l.TEXT_TYPE,
+							Literal:   "john",
+						},
 					},
-				},
-				{
-					Kind: p.ConstExprKind,
-					ConstExpression: &p.ConstExpression{
-						Kind: p.IntKind,
-						Int:  &l.Token{TokenType: l.INT_TYPE, Literal: "10"},
+					{
+						Kind: p.ConstExprKind,
+						ConstExpression: &p.ConstExpression{
+							Kind: p.IntKind,
+							Int:  &l.Token{TokenType: l.INT_TYPE, Literal: "10"},
+						},
 					},
 				},
 			},
@@ -181,11 +186,12 @@ func TestBuildInsertPlanCustomCols(t *testing.T) {
 				{Name: "name", Type: m.StringType},
 			},
 		},
-		Row: m.Row{"id": "10", "name": "john"},
+		Rows: []m.Row{{"id": "10", "name": "john"}},
 	}
 
 	plan, err := planner.buildInsert(stmt)
-	assert.Equal(t, plan, &expected, "Expected Plan should be the same")
+	fmt.Println("plan", plan)
+	assert.Equal(t, &expected, plan, "Expected Plan should be the same")
 	assert.NoError(t, err)
 }
 
@@ -209,12 +215,14 @@ func TestBuildInsertPlanCustomColsWithNullable(t *testing.T) {
 		InsertStatement: &p.InsertStatement{
 			TableName:     "mytable",
 			CustomColumns: []l.Token{l.NewToken(l.IDENTIFIER, "id")},
-			Values: &[]p.Expression{
+			Values: &[][]p.Expression{
 				{
-					Kind: p.ConstExprKind,
-					ConstExpression: &p.ConstExpression{
-						Kind: p.IntKind,
-						Int:  &l.Token{TokenType: l.INT_TYPE, Literal: "10"},
+					{
+						Kind: p.ConstExprKind,
+						ConstExpression: &p.ConstExpression{
+							Kind: p.IntKind,
+							Int:  &l.Token{TokenType: l.INT_TYPE, Literal: "10"},
+						},
 					},
 				},
 			},
@@ -230,7 +238,7 @@ func TestBuildInsertPlanCustomColsWithNullable(t *testing.T) {
 				{Name: "name", Type: m.StringType, Nullable: true},
 			},
 		},
-		Row: m.Row{"id": "10", "name": ""},
+		Rows: []m.Row{{"id": "10", "name": ""}},
 	}
 
 	plan, err := planner.buildInsert(stmt)

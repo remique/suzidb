@@ -52,7 +52,8 @@ func (pl *Planner) buildCreateTable(statement p.Statement) (Plan, error) {
 }
 
 func (pl *Planner) buildInsert(stmt p.Statement) (Plan, error) {
-	row := make(map[string]interface{})
+	// row := make(map[string]interface{})
+	rows := []m.Row{}
 
 	// Get table
 	tableName := stmt.InsertStatement.TableName
@@ -64,40 +65,21 @@ func (pl *Planner) buildInsert(stmt p.Statement) (Plan, error) {
 		return nil, fmt.Errorf("Table %s does not exist", tableName)
 	}
 
-	if len(stmt.InsertStatement.CustomColumns) != len(*stmt.InsertStatement.Values) &&
-		len(stmt.InsertStatement.CustomColumns) > 0 {
-		return nil, fmt.Errorf("Got %d columns and %d values",
-			len(stmt.InsertStatement.CustomColumns), len(*stmt.InsertStatement.Values))
+	for _, v := range *stmt.InsertStatement.Values {
+		if len(stmt.InsertStatement.CustomColumns) != len(v) &&
+			len(stmt.InsertStatement.CustomColumns) > 0 {
+			return nil, fmt.Errorf("Got %d columns and %d values",
+				len(stmt.InsertStatement.CustomColumns), len(v))
+		}
 	}
 
 	// TODO: Refactor this
 	if len(stmt.InsertStatement.CustomColumns) == 0 {
-		for i, c := range table.Columns {
-			// Check the type
-			currExpr := (*stmt.InsertStatement.Values)[i]
-			if c.Type != exprToColumnType(&currExpr) {
-				return nil, fmt.Errorf("Expected %d, got %d", c.Type, exprToColumnType(&currExpr))
-			}
-
-			toToken, err := exprToToken(&currExpr)
-			if err != nil {
-				return nil, fmt.Errorf("Error toToken")
-			}
-
-			row[c.Name] = toToken.Literal
-		}
-	} else {
-		for _, c := range table.Columns {
-			// Get index of customCols
-			idx := getColumnIndex(stmt.InsertStatement.CustomColumns, c.Name)
-			if idx == -1 {
-				if c.Nullable == true {
-					row[c.Name] = ""
-				} else {
-					return nil, fmt.Errorf("Error while getting column")
-				}
-			} else {
-				currExpr := (*stmt.InsertStatement.Values)[idx]
+		for _, v := range *stmt.InsertStatement.Values {
+			row := m.Row{}
+			for i, c := range table.Columns {
+				// Check the type
+				currExpr := v[i]
 				if c.Type != exprToColumnType(&currExpr) {
 					return nil, fmt.Errorf("Expected %d, got %d", c.Type, exprToColumnType(&currExpr))
 				}
@@ -109,10 +91,40 @@ func (pl *Planner) buildInsert(stmt p.Statement) (Plan, error) {
 
 				row[c.Name] = toToken.Literal
 			}
+			rows = append(rows, row)
+		}
+	} else {
+		for _, v := range *stmt.InsertStatement.Values {
+			row := m.Row{}
+			for _, c := range table.Columns {
+				// Get index of customCols
+				idx := getColumnIndex(stmt.InsertStatement.CustomColumns, c.Name)
+				if idx == -1 {
+					if c.Nullable == true {
+						row[c.Name] = ""
+					} else {
+						return nil, fmt.Errorf("Error while getting column")
+					}
+				} else {
+					currExpr := v[idx]
+					if c.Type != exprToColumnType(&currExpr) {
+						return nil, fmt.Errorf("Expected %d, got %d", c.Type, exprToColumnType(&currExpr))
+					}
+
+					toToken, err := exprToToken(&currExpr)
+					if err != nil {
+						return nil, fmt.Errorf("Error toToken")
+					}
+
+					row[c.Name] = toToken.Literal
+				}
+			}
+
+			rows = append(rows, row)
 		}
 	}
 
-	return &InsertPlan{Table: *table, Row: row}, nil
+	return &InsertPlan{Table: *table, Rows: rows}, nil
 }
 
 func (pl *Planner) buildSelect(stmt p.Statement) (Plan, error) {

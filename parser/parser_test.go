@@ -160,26 +160,29 @@ func TestParseInsertStatementWithCustomCols(t *testing.T) {
 			l.NewToken(l.IDENTIFIER, "name"),
 			l.NewToken(l.IDENTIFIER, "surname"),
 		},
-		Values: &[]Expression{
+		Values: &[][]Expression{
+
 			{
-				Kind: ConstExprKind,
-				ConstExpression: &ConstExpression{
-					Kind: IntKind,
-					Int:  &l.Token{TokenType: l.INT, Literal: "1"},
+				{
+					Kind: ConstExprKind,
+					ConstExpression: &ConstExpression{
+						Kind: IntKind,
+						Int:  &l.Token{TokenType: l.INT, Literal: "1"},
+					},
 				},
-			},
-			{
-				Kind: LiteralKind,
-				LiteralExpression: &l.Token{
-					TokenType: l.STRING,
-					Literal:   "john",
+				{
+					Kind: LiteralKind,
+					LiteralExpression: &l.Token{
+						TokenType: l.STRING,
+						Literal:   "john",
+					},
 				},
-			},
-			{
-				Kind: LiteralKind,
-				LiteralExpression: &l.Token{
-					TokenType: l.STRING,
-					Literal:   "smith",
+				{
+					Kind: LiteralKind,
+					LiteralExpression: &l.Token{
+						TokenType: l.STRING,
+						Literal:   "smith",
+					},
 				},
 			},
 		},
@@ -210,26 +213,28 @@ func TestParseInsertStatementWithoutColumnNames(t *testing.T) {
 	insertStmt := InsertStatement{
 		TableName:     "mytable",
 		CustomColumns: []l.Token{},
-		Values: &[]Expression{
+		Values: &[][]Expression{
 			{
-				Kind: ConstExprKind,
-				ConstExpression: &ConstExpression{
-					Kind: IntKind,
-					Int:  &l.Token{TokenType: l.INT, Literal: "1"},
+				{
+					Kind: ConstExprKind,
+					ConstExpression: &ConstExpression{
+						Kind: IntKind,
+						Int:  &l.Token{TokenType: l.INT, Literal: "1"},
+					},
 				},
-			},
-			{
-				Kind: LiteralKind,
-				LiteralExpression: &l.Token{
-					TokenType: l.STRING,
-					Literal:   "john",
+				{
+					Kind: LiteralKind,
+					LiteralExpression: &l.Token{
+						TokenType: l.STRING,
+						Literal:   "john",
+					},
 				},
-			},
-			{
-				Kind: LiteralKind,
-				LiteralExpression: &l.Token{
-					TokenType: l.STRING,
-					Literal:   "smith",
+				{
+					Kind: LiteralKind,
+					LiteralExpression: &l.Token{
+						TokenType: l.STRING,
+						Literal:   "smith",
+					},
 				},
 			},
 		},

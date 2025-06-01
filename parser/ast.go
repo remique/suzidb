@@ -46,5 +46,5 @@ type InsertStatement struct {
 	// If specific order is specified, push it to this array
 	CustomColumns []l.Token
 
-	Values *[]Expression
+	Values *[][]Expression
 }

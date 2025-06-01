@@ -26,7 +26,7 @@ type CreateTablePlan struct {
 // This change needs to be supported in Parser as well ([][]m.Column)
 type InsertPlan struct {
 	Table m.Table
-	Row   m.Row
+	Rows  []m.Row
 }
 
 // Temporary plan, before actual query plan.

@@ -114,24 +114,40 @@ func (p *Parser) parseInsertStatement() (*Statement, error) {
 
 	p.nextToken()
 
-	// Then LPAREN
+	valuesArr := [][]Expression{}
 
-	p.nextToken()
+	for {
+		// Then LPAREN
+		p.nextToken()
 
-	// Then list of tokens
-	values, err := p.parseInsertValues()
-	if err != nil {
-		return nil, err
+		// Then list of tokens
+		values, err := p.parseInsertValues()
+		if err != nil {
+			return nil, err
+		}
+
+		p.nextToken()
+		if !p.expectCurrToken(l.R_PAREN) {
+			return nil, fmt.Errorf("Expected R_PAREN token")
+		}
+
+		if len(cols) > 0 && len(cols) != len(*values) {
+			return nil, fmt.Errorf("Got %d columns and %d values", len(cols), len(*values))
+		}
+
+		valuesArr = append(valuesArr, *values)
+		fmt.Println("valuesArr", valuesArr)
+
+		p.nextToken()
+		if !p.expectCurrToken(l.COMMA) {
+			break
+		}
 	}
 
 	insertStmt := InsertStatement{
 		TableName:     tableName,
 		CustomColumns: cols,
-		Values:        values,
-	}
-
-	if len(cols) > 0 && len(cols) != len(*values) {
-		return nil, fmt.Errorf("Got %d columns and %d values", len(cols), len(*values))
+		Values:        &valuesArr,
 	}
 
 	return &Statement{InsertStatement: &insertStmt, Kind: InsertKind}, nil

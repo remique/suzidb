@@ -235,7 +235,7 @@ func (p *Parser) parseExpressionAtom() (*Expression, error) {
 		}
 	default:
 		{
-			return nil, fmt.Errorf("Invalid expression atom")
+			return nil, fmt.Errorf("Invalid expression atom: %s", p.currentToken.Literal)
 		}
 	}
 }

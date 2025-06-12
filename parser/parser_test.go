@@ -197,6 +197,76 @@ func TestParseInsertStatementWithCustomCols(t *testing.T) {
 	assert.Equal(t, expected.InsertStatement, stmt.InsertStatement, "Expected statements to be the same")
 }
 
+func TestParseInsertStatementMultiple(t *testing.T) {
+	lexer := l.NewLexer("insert into mytable(id, name, surname) values (1, 'john', 'smith'), (2, 'alice', 'kovalsky');")
+	parser := NewParser(*lexer)
+
+	insertStmt := InsertStatement{
+		TableName: "mytable",
+		CustomColumns: []l.Token{
+			l.NewToken(l.IDENTIFIER, "id"),
+			l.NewToken(l.IDENTIFIER, "name"),
+			l.NewToken(l.IDENTIFIER, "surname"),
+		},
+		Values: &[][]Expression{
+			{
+				{
+					Kind: ConstExprKind,
+					ConstExpression: &ConstExpression{
+						Kind: IntKind,
+						Int:  &l.Token{TokenType: l.INT, Literal: "1"},
+					},
+				},
+				{
+					Kind: LiteralKind,
+					LiteralExpression: &l.Token{
+						TokenType: l.STRING,
+						Literal:   "john",
+					},
+				},
+				{
+					Kind: LiteralKind,
+					LiteralExpression: &l.Token{
+						TokenType: l.STRING,
+						Literal:   "smith",
+					},
+				},
+			},
+			{
+				{
+					Kind: ConstExprKind,
+					ConstExpression: &ConstExpression{
+						Kind: IntKind,
+						Int:  &l.Token{TokenType: l.INT, Literal: "2"},
+					},
+				},
+				{
+					Kind: LiteralKind,
+					LiteralExpression: &l.Token{
+						TokenType: l.STRING,
+						Literal:   "alice",
+					},
+				},
+				{
+					Kind: LiteralKind,
+					LiteralExpression: &l.Token{
+						TokenType: l.STRING,
+						Literal:   "kovalsky",
+					},
+				},
+			},
+		},
+	}
+
+	expected := &Statement{InsertStatement: &insertStmt, Kind: InsertKind}
+
+	stmt, err := parser.parseInsertStatement()
+	if err != nil {
+		t.Fatalf("err %s", err.Error())
+	}
+	assert.Equal(t, expected.InsertStatement, stmt.InsertStatement, "Expected statements to be the same")
+}
+
 func TestParseInsertStatementWithCustomColsNotMatching(t *testing.T) {
 	lexer := l.NewLexer("insert into mytable(id, name) values (1, 'john', 'smith');")
 	parser := NewParser(*lexer)

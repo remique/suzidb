@@ -174,7 +174,6 @@ func (p *Parser) parseInsertValues() (*[]Expression, error) {
 	var vals []Expression
 
 	for {
-		fmt.Println("curtok", p.currentToken.Literal, p.currentToken.TokenType)
 		expr, err := p.ParseExpression(LowestPrecedence)
 		if err != nil {
 			return nil, err
@@ -184,9 +183,6 @@ func (p *Parser) parseInsertValues() (*[]Expression, error) {
 
 		if !p.expectPeekToken(l.COMMA) {
 			break
-		} else {
-			// fmt.Printf("peekToken: %s\n", p.peekToken.Literal)
-			fmt.Println(p.currentToken.Literal, p.peekToken.Literal)
 		}
 
 		// Skip ','
@@ -195,8 +191,6 @@ func (p *Parser) parseInsertValues() (*[]Expression, error) {
 		// Fetch next TYPE
 		p.nextToken()
 	}
-
-	// fmt.Printf("final vals %+v \n", vals)
 
 	return &vals, nil
 }
@@ -271,7 +265,6 @@ func (p *Parser) parseCreateTableColumns() (columns *[]m.Column, primaryKey *str
 		p.nextToken()
 
 		if !(p.expectCurrToken(l.INT_TYPE) || p.expectCurrToken(l.TEXT_TYPE)) {
-			fmt.Printf("Current token: %+v, nextToken: %+v", p.currentToken, p.peekToken)
 			return nil, nil, fmt.Errorf("Expected TYPE")
 		}
 

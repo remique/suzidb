@@ -190,7 +190,6 @@ func TestBuildInsertPlanCustomCols(t *testing.T) {
 	}
 
 	plan, err := planner.buildInsert(stmt)
-	fmt.Println("plan", plan)
 	assert.Equal(t, &expected, plan, "Expected Plan should be the same")
 	assert.NoError(t, err)
 }

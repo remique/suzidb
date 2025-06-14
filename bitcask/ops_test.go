@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"hash/crc32"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -46,6 +47,21 @@ func TestSetSingle(t *testing.T) {
 		Key:   "a",
 		Value: []byte("b"),
 	}
+
+	expectedKeydir := KeyDirRecord{
+		FileId:    b.ActiveFile.Id,
+		ValueSize: len("a"),
+		ValuePos:  0,
+		Timestamp: int(time.Now().Unix()),
+	}
+
+	// Test KeyDir as well
+
+	assert.Equal(t, expectedKeydir.FileId, b.KeyDir["a"].FileId)
+	assert.Equal(t, expectedKeydir.ValueSize, b.KeyDir["a"].ValueSize)
+	assert.Equal(t, expectedKeydir.ValuePos, b.KeyDir["a"].ValuePos)
+	assert.InDelta(t, expectedKeydir.Timestamp, b.KeyDir["a"].Timestamp, 2,
+		"timestamp should be within 2 seconds")
 
 	assert.Equal(t, expected.Key, rec.Key)
 	assert.Equal(t, expected.Value, rec.Value)

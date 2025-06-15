@@ -2,6 +2,7 @@ package bitcask
 
 import (
 	"encoding/json"
+	"fmt"
 )
 
 type DiskRecord struct {
@@ -25,4 +26,14 @@ func (dr *DiskRecord) encode() ([]byte, error) {
 	}
 
 	return serialized, nil
+}
+
+func decode(input []byte) (*DiskRecord, error) {
+	var dr DiskRecord
+	err := json.Unmarshal(input, &dr)
+	if err != nil {
+		return nil, fmt.Errorf("Could not Unmarshal")
+	}
+
+	return &dr, nil
 }

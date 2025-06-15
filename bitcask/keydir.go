@@ -9,3 +9,6 @@ type KeyDirRecord struct {
 
 // TODO: Use btreeMap?
 type KeyDir map[string]KeyDirRecord
+
+// TODO: We could implement methods on KeyDir as to simplify changing the underlying
+// storage of KeyDir.

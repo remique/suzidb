@@ -1,7 +1,9 @@
 package bitcask
 
 import (
+	"fmt"
 	"io"
+	"slices"
 	"time"
 )
 
@@ -36,7 +38,7 @@ func (b *Bitcask) Set(key, value string) error {
 	// Set Record in keydir
 	b.KeyDir[key] = KeyDirRecord{
 		FileId:    b.ActiveFile.Id,
-		ValueSize: len(value),
+		ValueSize: len(serialized),
 
 		// TODO: Use i64 instead of int
 		ValuePos:  int(pos),
@@ -46,4 +48,37 @@ func (b *Bitcask) Set(key, value string) error {
 	return nil
 }
 
-// func (b *Bitcask) Get()
+func (b *Bitcask) Get(key string) (*DiskRecord, error) {
+	fromKeydir, ok := b.KeyDir[key]
+	if !ok {
+		return nil, fmt.Errorf("No value found")
+	}
+
+	fileToRead := b.ActiveFile
+	buffer := make([]byte, fromKeydir.ValueSize)
+
+	if fromKeydir.FileId != b.ActiveFile.Id {
+		// We need to find b.StaleFiles ID
+		idx := slices.IndexFunc(b.StaleFiles, func(df *DataFile) bool { return df.Id == fromKeydir.FileId })
+		if idx < 0 {
+			return nil, fmt.Errorf("No fileId: %d", fromKeydir.FileId)
+		}
+
+		fileToRead = b.StaleFiles[idx]
+	}
+
+	_, err := fileToRead.Fd.ReadAt(buffer, int64(fromKeydir.ValuePos))
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("buffer", string(buffer))
+
+	// Decode bytes -> DiskRecord
+	dr, err := decode(buffer)
+	if err != nil {
+		return nil, err
+	}
+
+	return dr, nil
+}

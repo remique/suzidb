@@ -1,5 +1,9 @@
 package storage
 
+import (
+	"strings"
+)
+
 type MemStorage struct {
 	Store map[string]string
 }
@@ -35,4 +39,16 @@ func (ms *MemStorage) ScanKeys() []string {
 	}
 
 	return res
+}
+
+func (ms *MemStorage) ScanWithPrefix(prefix string) map[string]string {
+	m := make(map[string]string)
+
+	for key, value := range ms.Store {
+		if strings.HasPrefix(key, prefix) {
+			m[key] = value
+		}
+	}
+
+	return m
 }

@@ -290,6 +290,8 @@ func TestSelectNestedLoopJoinAsSelect(t *testing.T) {
 	assert.ElementsMatch(t, expected.Columns, res.(*SelectResult).Columns)
 }
 
+// TODO: This test is non-deterministic for some reason. Sometimes it throws a nil pointer dereference.
+// Check out why.
 func TestSelectNestedLoopJoinAsSelectWithProjection(t *testing.T) {
 	s := storage.NewMemStorage()
 	sm := storage.NewSchemaManager(s)

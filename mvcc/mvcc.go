@@ -17,10 +17,10 @@ type VersionedKeyValue struct {
 }
 
 // Formats VersionedKeyValue into writeable key and value pair into the storage.
-func (vkv *VersionedKeyValue) encode() (key string, value string) {
-	formattedKey := fmt.Sprintf("%s::%020d", key, vkv.version)
+func (vkv *VersionedKeyValue) encode() (outputKey string, outputValue string) {
+	formattedKey := fmt.Sprintf("%s::%020d", vkv.key, vkv.version)
 
-	return formattedKey, value
+	return formattedKey, vkv.value
 }
 
 func (t *Transaction) Set(key, value string) error {

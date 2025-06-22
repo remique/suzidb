@@ -51,7 +51,12 @@ func BeginTransaction(store storage.Storage) (*Transaction, error) {
 	}, nil
 }
 
-func (t *Transaction) writeWithVersion(vkv VersionedKeyValue) error {
+func (t *Transaction) writeWithVersion(key, value string) error {
+	vkv := VersionedKeyValue{
+		key:     key,
+		value:   value,
+		version: t.id,
+	}
 	k, v := vkv.encode()
 
 	err := t.Store.Set(k, v)
@@ -61,3 +66,7 @@ func (t *Transaction) writeWithVersion(vkv VersionedKeyValue) error {
 
 	return nil
 }
+
+// func (t *Transaction) getLatestValue(key string) (VersionedKeyValue, error) {
+// 	//
+// }

@@ -1,7 +1,6 @@
 package mvcc
 
 import (
-	"math"
 	"strconv"
 	"testing"
 
@@ -38,14 +37,14 @@ func TestNewTransaction(t *testing.T) {
 func TestTransactionLimit(t *testing.T) {
 	ms := storage.NewMemStorage()
 
-	maxuint64 := uint64(math.MaxUint64)
+	maxuint64 := uint64(1<<64 - 1)
 	maxMinusOne := strconv.FormatUint(maxuint64, 10)
 	err := ms.Set("mvcc:next_tid", maxMinusOne)
 	assert.NoError(t, err)
 
 	trans1, err := BeginTransaction(ms)
 	assert.NoError(t, err)
-	assert.Equal(t, uint64(math.MaxUint64), trans1.id)
+	assert.Equal(t, uint64(1<<64-1), trans1.id)
 
 	// After reaching the limit we receive id: 1. Which means, that
 	// currently we support up to 18446744073709551615 transactions.

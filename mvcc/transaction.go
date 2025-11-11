@@ -7,9 +7,11 @@ import (
 	"example.com/suzidb/storage"
 )
 
+// TODO: Add TransactionState
 type Transaction struct {
-	Store storage.Storage
-	id    uint64
+	Store          storage.Storage
+	IsolationLevel IsolationLevel
+	id             uint64
 }
 
 func BeginTransaction(store storage.Storage) (*Transaction, error) {
@@ -51,6 +53,9 @@ func BeginTransaction(store storage.Storage) (*Transaction, error) {
 	}, nil
 }
 
+// Actually lol no we have to save the versioned key in an array? In order to
+// iterate over it.
+
 func (t *Transaction) writeWithVersion(key, value string) error {
 	vkv := VersionedKeyValue{
 		key:     key,
@@ -67,6 +72,10 @@ func (t *Transaction) writeWithVersion(key, value string) error {
 	return nil
 }
 
-// func (t *Transaction) getLatestValue(key string) (VersionedKeyValue, error) {
-// 	//
-// }
+func (t *Transaction) get(key string) (VersionedKeyValue, error) {
+	// TODO: Get the key based on isolation level
+}
+
+func (t *Transaction) getReadUncommited(key string) (VersionedKeyValue, error) {
+	scanned := t.Store.ScanWithPrefix(key)
+}

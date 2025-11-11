@@ -23,8 +23,25 @@ func (vkv *VersionedKeyValue) encode() (outputKey string, outputValue string) {
 	return formattedKey, vkv.value
 }
 
-func (t *Transaction) Set(key, value string) error {
-	// TODO: Write a versioned key value
+// Transaction can be in either of the three states denoted below.
+type TransactionState uint8
 
-	return nil
-}
+const (
+	InProgress TransactionState = iota
+	Commited
+	Aborted
+)
+
+// Denotes an isolation level for a transaction. Usually managed by Transaction Manager, but
+// can be constructed manually via BeginTransaction.
+type IsolationLevel uint8
+
+const (
+	// Most basic isolation level and not used by default. Reads get the most recent value,
+	// regardless of the transaction state.
+	ReadUncommited IsolationLevel = iota
+
+	// This is an upgraded isolation level and is the default in SuziDB.
+	// Every read gets the latest _commited_ value.
+	ReadCommited
+)
